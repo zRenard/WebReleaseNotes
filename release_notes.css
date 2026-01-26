@@ -4,11 +4,6 @@
     text-decoration: underline;
 }
 
-/* Hidden element utility class (CSP-compliant alternative to inline styles) */
-.hidden {
-    display: none !important;
-}
-
 /* Positionnement horizontal pour timeline (0% à 100%) */
 .left-0   { left: 0%;   position: absolute; }
 .left-1   { left: 1%;   position: absolute; }
@@ -1113,7 +1108,7 @@ h1 {
 }
 
 .release-title {
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
     font-size: 1.8em;
     font-weight: 700;
     display: flex;
@@ -1188,7 +1183,7 @@ h1 {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (width <= 768px) {
     .view-controls {
         flex-direction: column;
         align-items: stretch;
