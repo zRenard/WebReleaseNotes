@@ -99,6 +99,19 @@ function parseReleases(commits) {
     
     const releasesList = [];
     
+    // Check for commits before the first tag (Incoming commits)
+    if (tagGroups.length > 0 && tagGroups[0].index > 0) {
+        const incomingCommits = commits.slice(0, tagGroups[0].index);
+        releasesList.push({
+            tag: 'Incoming',
+            commits: incomingCommits,
+            startDate: incomingCommits[0]?.date,
+            endDate: incomingCommits[incomingCommits.length - 1]?.date,
+            commitCount: incomingCommits.length,
+            isVirtual: true
+        });
+    }
+    
     for (let i = 0; i < tagGroups.length; i++) {
         const currentGroup = tagGroups[i];
         const nextGroup = i < tagGroups.length - 1 ? tagGroups[i + 1] : null;
@@ -218,9 +231,9 @@ function displayReleaseView(selectedReleaseTag) {
             .join('');
         
         return `
-            <div class="release-section" data-release-tag="${escapeHtml(release.tag)}">
+            <div class="release-section ${release.isVirtual ? 'virtual-release' : ''}" data-release-tag="${escapeHtml(release.tag)}">
                 <div class="release-header">
-                    <h2 class="release-title">🏷️ ${escapeHtml(release.tag)}</h2>
+                    <h2 class="release-title">${release.isVirtual ? '🚀' : '🏷️'} ${escapeHtml(release.tag)}</h2>
                     <div class="release-meta">
                         <span class="release-commit-count">📊 ${release.commitCount} commits</span>
                         <span class="release-date-range">📅 ${release.startDate} to ${release.endDate}</span>
@@ -243,8 +256,11 @@ function displayReleaseView(selectedReleaseTag) {
     const releasePanels = container.querySelectorAll('.release-section');
     releasePanels.forEach(panel => {
         panel.addEventListener('click', (e) => {
-            // Don't trigger if clicking on links or interactive elements
-            if (e.target.tagName === 'A' || e.target.closest('a')) {
+            // Don't trigger if clicking on links, interactive elements, or commit items
+            if (e.target.tagName === 'A' || 
+                e.target.closest('a') || 
+                e.target.closest('.commit-item') ||
+                e.target.classList.contains('commit-item')) {
                 return;
             }
             

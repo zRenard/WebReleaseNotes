@@ -1100,6 +1100,20 @@ h1 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Style for virtual "Incoming" release */
+.release-section.virtual-release {
+    border: 2px solid #ff9800;
+    background: linear-gradient(135deg, #fff9f0 0%, #ffe0b2 100%);
+}
+
+.release-section.virtual-release .release-header {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.release-section.virtual-release:hover {
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+}
+
 .release-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;

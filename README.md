@@ -1,0 +1,211 @@
+# Web Release Notes
+
+A web-based release notes viewer that generates beautiful, interactive release notes from Git commit history. Features include commit-by-commit view, release-by-release aggregation, and a visual timeline with filtering capabilities.
+
+## Features
+
+- 📋 **Dual View Modes**: View commits individually or aggregated by release tags
+- 🏷️ **Virtual "Incoming" Release**: Automatically groups unreleased commits
+- 🎨 **Interactive Timeline**: Visual representation of commits with zoom capabilities
+- 🔍 **Smart Filtering**: Filter by commit type (features, fixes, docs, chores)
+- 📊 **Statistics Dashboard**: Summary cards showing commit counts by category
+- 🚀 **Auto-classification**: Automatically categorizes commits using conventional commit standards
+- 🌐 **GitHub Integration**: Direct links to commits and repository
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+## Description
+
+Web Release Notes is a comprehensive solution for generating and displaying release notes from Git repositories. It consists of:
+
+- **Python Script** (`release_notes.py`): Extracts commit history and generates JSON data
+- **Web Interface** (`release_notes.html`, `release_notes.js`, `release_notes.css`): Interactive viewer with multiple view modes
+- **Node.js Server** (`server.js`): Local development server with live reload
+- **Build Pipeline** (`local.sh`): Automated linting, minification, and validation
+
+The tool automatically classifies commits into categories (features, bug fixes, documentation, chores), supports release tagging, and creates a virtual "Incoming" release for commits not yet tagged.
+
+## Installation
+
+### Prerequisites
+
+- **Python 3.7+** with pip
+- **Node.js 14+** with npm
+- **Git** repository
+
+### Setup
+
+1. **Clone or download** this repository:
+   ```bash
+   git clone <your-repo-url>
+   cd WebReleaseNotes
+   ```
+
+2. **Install Python dependencies**:
+   ```bash
+   pip install -e .
+   ```
+
+3. **Install Node.js dependencies**:
+   ```bash
+   npm install stylelint-config-standard
+   ```
+
+4. **Generate release notes data**:
+   ```bash
+   python release_notes.py --num_commits 50 --output release_notes.json
+   ```
+   
+   Options:
+   - `--num_commits N`: Number of commits to include (default: 20)
+   - `--output FILE`: Output JSON file path (default: release_notes.json)
+
+## Testing
+
+### Local Development Server
+
+Start the development server to test the web interface:
+
+```bash
+npm run dev
+# or
+node server.js
+```
+
+Visit `http://localhost:3000` in your browser.
+
+#### CSP rules
+The development server includes Content Security Policy (CSP) headers to enhance security. If you encounter issues loading resources, ensure your browser supports CSP and that no extensions are interfering.
+Validate that the CSP headers are correctly set by checking the browser's developer console for any CSP-related errors.
+
+### Validation and Linting
+
+Run the complete validation pipeline:
+
+```bash
+./local.sh
+```
+
+This script performs:
+
+1. **JavaScript linting** with ESLint
+2. **HTML validation** with HTMLHint
+3. **CSS validation** with Stylelint
+4. **Minification** of HTML, CSS, and JavaScript
+5. **Post-minification validation**
+6. **JSON generation** with sample data
+
+Output files are created in the `out/` directory.
+
+## Deploying
+
+### GitHub Pages Deployment
+
+1. **Generate production files**:
+   ```bash
+   ./local.sh
+   ```
+
+2. **Copy output files** from `out/` directory to your GitHub Pages branch or deployment folder:
+   ```bash
+   cp out/release_notes.html index.html
+   cp out/release_notes.css release_notes.css
+   cp out/release_notes.js release_notes.js
+   cp out/release_notes.json release_notes.json
+   ```
+
+3. **Commit and push** to GitHub Pages:
+   ```bash
+   git add index.html release_notes.* 
+   git commit -m "Update release notes"
+   git push origin gh-pages
+   ```
+
+### Static Web Server Deployment
+
+For any static web server (Apache, Nginx, etc.):
+
+1. **Build production files**:
+   ```bash
+   ./local.sh
+   ```
+
+2. **Copy files** from `out/` directory to your web server's document root:
+   ```bash
+   cp out/* /var/www/html/release-notes/
+   ```
+
+3. **Configure release notes generation**:
+   ```
+   python release_notes.py --num_commits 50 --output release_notes.json
+   ```
+
+### Automated Deployment
+
+For CI/CD pipelines, add these steps to your workflow:
+
+```yaml
+# Example GitHub Actions workflow
+- name: 🚚 Get latest code
+   uses: actions/checkout@v6
+   with:
+      # NOTICE : You must use this option to get all tags for release detection
+      fetch-depth: 0
+- name: Generate Release Notes
+  run: |
+    python release_notes.py --num_commits 50 --output release_notes.json
+
+# You may need to set up Node.js environment here and run directly minifiyer or
+# use directly the compressed version
+# (Section simplifyed for brevity)
+- name: Build and Validate
+  run: |
+    chmod +x local.sh
+    ./local.sh
+
+- name: Deploy to GitHub Pages
+  uses: peaceiris/actions-gh-pages@v3
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    publish_dir: ./out
+```
+
+## Usage
+
+### View Modes
+
+- **By Commit**: Shows all commits in chronological order with expandable details
+- **By Release**: Groups commits by release tags, with a special "Incoming" virtual release for unreleased commits
+
+### Filtering
+
+- Click on **summary cards** to filter by commit type (features, fixes, docs, etc.)
+- Click on **timeline dots** to jump to specific commits
+- Use the **release dropdown** to view specific releases
+
+### Release Tags
+
+The tool automatically detects Git tags starting with `v` or `V` (e.g., `v1.0.0`, `V2.1.3`) and groups commits accordingly. Commits before the first tag are grouped into an "Incoming" virtual release.
+
+## Project Structure
+
+```
+WebReleaseNotes/
+├── release_notes.py       # Python script for generating commit data
+├── release_notes.html     # Main HTML interface
+├── release_notes.js       # JavaScript application logic
+├── release_notes.css      # Styling and responsive design
+├── release_notes.json     # Generated commit data (gitignored)
+├── server.js              # Development server
+├── local.sh               # Build and validation script
+├── package.json           # Node.js dependencies
+├── eslint.config.js       # ESLint configuration
+└── out/                   # Production build output (gitignored)
+```
+
+## License
+
+See [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please ensure all code passes validation, before submitting changes.

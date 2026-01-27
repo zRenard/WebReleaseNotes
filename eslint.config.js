@@ -5,7 +5,7 @@ export default [
     {
         languageOptions: {
             ecmaVersion: 'latest',
-            sourceType: 'script',
+            sourceType: 'module',  // Changed from 'script' to 'module'
             globals: {
                 '$': 'readonly',
                 'jQuery': 'readonly',
@@ -29,7 +29,7 @@ export default [
                 'Image': 'readonly',
                 'confirm': 'readonly',
                 'alert': 'readonly'
-            }
+            },
         },
         rules: {
             'no-unused-vars': 'off',

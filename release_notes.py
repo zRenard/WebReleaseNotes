@@ -1,4 +1,4 @@
-"""
+79"""
 Export commit messages from the current repository for release notes.
 
 This script extracts the last N commits from the current repository
@@ -35,7 +35,7 @@ def classify_commit(first_line, author, full_message):
         return 'chore'
 
     # Message heuristics
-    if any(word in first_l for word in ['fix', 'bug', 'hotfix', 'patch', 'resolve', 'error', 'issue','correction','ajustement', 'réparation','bugfix']):
+    if any(word in first_l for word in ['fix', 'bug', 'hotfix', 'patch', 'resolve', 'error', 'erreur','issue','correction','ajustement', 'réparation','bugfix']):
         return 'fix'
     if any(word in first_l for word in ['doc', 'readme', 'changelog']):
         return 'docs'
