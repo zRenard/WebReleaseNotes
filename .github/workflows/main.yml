@@ -1,0 +1,62 @@
+on:
+  push:
+    branches:
+    - main
+name: 🚀 Validate and build artifact
+jobs:
+  web-flow:
+    name: Website Build, Validate, and Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'  
+      - name: Install Minifier Tools
+        run: npm install terser html-minifier csso-cli
+      - name: Install Validation Tools
+        run: npm install htmlhint eslint stylelint stylelint-config-standard
+      - name: ✅ Validating HTML
+        run: |
+          npx htmlhint release_notes.html
+      - name: ✅ Validating JavaScript
+        run: |
+          npx eslint release_notes.js
+      - name: ✅ Validating CSS
+        run: |
+          npx stylelint release_notes.css
+      - name: 📝 Minifying HTML
+        run: |
+          npx html-minifier --collapse-whitespace --remove-comments --minify-css true --minify-js true -o release_notes.html release_notes.html
+      - name: 📝 Minifying JavaScript
+        run: |
+          npx terser release_notes.js -o release_notes.js --compress --mangle --comments "/eslint/"
+      - name: 📝 Minifying CSS
+        run: |
+          npx csso-cli release_notes.css --output release_notes.css
+      - name: ✅ Validate minified HTML
+        run: |
+          npx htmlhint release_notes.html
+      - name: ✅ Validate minified JavaScript
+        run: |
+          npx eslint release_notes.js
+      - name: ✅ Validate minified CSS
+        run: |
+          npx stylelint release_notes.css
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: � Prepare deployment files
+        run: |
+          mkdir -p deploy
+          cp release_notes.html deploy/
+          cp release_notes.json deploy/
+          cp release_notes.js deploy/
+          cp release_notes.css deploy/
+          cp release_notes.py deploy/
+      - 

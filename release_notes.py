@@ -1,4 +1,4 @@
-79"""
+"""
 Export commit messages from the current repository for release notes.
 
 This script extracts the last N commits from the current repository
