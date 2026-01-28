@@ -12,6 +12,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 🚀 **Auto-classification**: Automatically categorizes commits using conventional commit standards
 - 🌐 **GitHub Integration**: Direct links to commits and repository
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
 
 ## Description
 
@@ -56,8 +57,11 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    ```
    
    Options:
-   - `--num_commits N`: Number of commits to include (default: 20)
+   - `--num_commits N`: Number of commits to include (default: 10)
    - `--output FILE`: Output JSON file path (default: release_notes.json)
+   - `--markdown FILE`: Optional markdown file path (e.g., RELEASE_NOTES.md)
+   - `--repo_path PATH`: Path to the repository (default: current directory)
+   - `--branch BRANCH`: Branch to analyze (default: main)
 
 ## Testing
 
@@ -136,7 +140,7 @@ For any static web server (Apache, Nginx, etc.):
 
 3. **Configure release notes generation**:
    ```
-   python release_notes.py --num_commits 50 --output release_notes.json
+   python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
    ```
 
 ### Automated Deployment
@@ -152,7 +156,7 @@ For CI/CD pipelines, add these steps to your workflow:
       fetch-depth: 0
 - name: Generate Release Notes
   run: |
-    python release_notes.py --num_commits 50 --output release_notes.json
+    python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
 
 # You may need to set up Node.js environment here and run directly minifiyer or
 # use directly the compressed version
@@ -185,6 +189,31 @@ For CI/CD pipelines, add these steps to your workflow:
 ### Release Tags
 
 The tool automatically detects Git tags starting with `v` or `V` (e.g., `v1.0.0`, `V2.1.3`) and groups commits accordingly. Commits before the first tag are grouped into an "Incoming" virtual release.
+
+### Markdown Output
+
+When using the `--markdown` option, the script generates a formatted markdown file:
+
+- **With Release Tags**: Structures the markdown by releases (matching the HTML "By Release" view)
+  - Each release section shows commit count, date range, and category summary
+  - Commits are grouped by type within each release
+  - Includes an overall summary at the end
+
+- **Without Release Tags**: Lists commits chronologically by date (matching the HTML "By Commit" view)
+  - Each commit shows type badge, message, author, and date
+  - Includes statistics and breakdown by type at the end
+
+Example usage:
+```bash
+# Generate both JSON and markdown
+python release_notes.py --markdown RELEASE_NOTES.md --num_commits 50
+
+# Analyze a different repository
+python release_notes.py --repo_path ../my-project --markdown RELEASE_NOTES.md
+
+# Use a specific branch
+python release_notes.py --branch develop --markdown RELEASE_NOTES.md
+```
 
 ## Project Structure
 

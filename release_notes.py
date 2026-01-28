@@ -21,14 +21,14 @@ def classify_commit(first_line, author, full_message):
     # Conventional commit prefix
     if ':' in first_line:
         prefix = first_line.split(':', 1)[0].strip().lower()
+        if prefix in ['chore', 'ci', 'build', 'test', 'refactor', 'perf']:
+            return 'chore'
         if prefix in ['feat']:
             return 'feat'
         if prefix in ['fix']:
             return 'fix'
         if prefix in ['docs']:
             return 'docs'
-        if prefix in ['chore', 'ci', 'build', 'test', 'refactor', 'perf']:
-            return 'chore'
 
     # Author-based heuristic (bots/dependency updaters)
     if 'renovate' in author_l or 'dependabot' in author_l:
@@ -117,7 +117,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
     return commits_data
 
 
-def export_release_notes(repo_path, num_commits, output_path, branch='main'):
+def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None):
     """
     Export commit messages from current repository to JSON for release notes.
     
@@ -126,6 +126,7 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main'):
         num_commits: Number of commits to export
         output_path: Path to save JSON file
         branch: Branch to analyze
+        markdown_path: Optional path to save markdown file
     """
     print(f"[*] Extracting {num_commits} commits from branch '{branch}'...")
     
@@ -168,7 +169,323 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main'):
     
     print(f"[OK] Exported {len(commits)} commits to {output_path}")
     
+    # Generate markdown file if requested
+    if markdown_path:
+        markdown_content = generate_markdown(release_data)
+        with open(markdown_path, 'w', encoding='utf-8') as f:
+            f.write(markdown_content)
+        print(f"[OK] Generated markdown file: {markdown_path}")
+    
     return release_data
+
+
+def generate_markdown(release_data):
+    """
+    Generate markdown formatted release notes from release data.
+    
+    Args:
+        release_data: Dictionary containing release note data
+    
+    Returns:
+        Markdown formatted string
+    """
+    md_lines = []
+    
+    # Header
+    repo_name = release_data['repository']['name']
+    md_lines.append(f"# Release Notes - {repo_name}")
+    md_lines.append("")
+    md_lines.append(f"**Generated:** {release_data['generated_at']}")
+    md_lines.append(f"**Branch:** {release_data['repository']['branch']}")
+    if release_data['repository']['url']:
+        md_lines.append(f"**Repository:** {release_data['repository']['url']}")
+    md_lines.append("")
+    md_lines.append("---")
+    md_lines.append("")
+    
+    # Check if there are release tags (tags starting with v or V)
+    releases = parse_releases(release_data['commits'])
+    
+    if releases:
+        # Structure by releases
+        md_lines.extend(generate_markdown_by_release(releases, release_data))
+    else:
+        # Structure by commit type (original behavior)
+        md_lines.extend(generate_markdown_by_type(release_data))
+    
+    return '\n'.join(md_lines)
+
+
+def parse_releases(commits):
+    """
+    Parse commits to identify releases based on tags starting with 'v' or 'V'.
+    
+    Args:
+        commits: List of commit dictionaries
+    
+    Returns:
+        List of release dictionaries or empty list if no release tags found
+    """
+    # Build a map of tags with their first appearance index
+    tag_first_index = {}
+    
+    for index, commit in enumerate(commits):
+        if 'tags' in commit and commit['tags']:
+            for tag in commit['tags']:
+                if tag not in tag_first_index:
+                    tag_first_index[tag] = index
+    
+    # Filter to only include release tags (starting with 'v' or 'V')
+    release_tags = [tag for tag in tag_first_index.keys() if tag.startswith('v') or tag.startswith('V')]
+    
+    if not release_tags:
+        return []
+    
+    # Get unique commit indices where release tags appear (in order)
+    unique_indices = sorted(set(tag_first_index[tag] for tag in release_tags))
+    
+    # For each unique index, collect all release tags that appear at that index
+    tag_groups = []
+    for index in unique_indices:
+        tags_at_index = [tag for tag in release_tags if tag_first_index[tag] == index]
+        tag_groups.append({'index': index, 'tags': tags_at_index})
+    
+    releases_list = []
+    
+    # Check for commits before the first tag (Incoming commits)
+    if tag_groups and tag_groups[0]['index'] > 0:
+        incoming_commits = commits[:tag_groups[0]['index']]
+        releases_list.append({
+            'tag': 'Incoming',
+            'commits': incoming_commits,
+            'start_date': incoming_commits[0]['date'] if incoming_commits else '',
+            'end_date': incoming_commits[-1]['date'] if incoming_commits else '',
+            'commit_count': len(incoming_commits),
+            'is_virtual': True
+        })
+    
+    # Process each release
+    for i, current_group in enumerate(tag_groups):
+        next_group = tag_groups[i + 1] if i < len(tag_groups) - 1 else None
+        
+        start_index = current_group['index']
+        end_index = next_group['index'] if next_group else len(commits)
+        
+        release_commits = commits[start_index:end_index]
+        releases_list.append({
+            'tag': ' / '.join(current_group['tags']),  # Merge multiple tags on same commit
+            'commits': release_commits,
+            'start_date': release_commits[0]['date'] if release_commits else '',
+            'end_date': release_commits[-1]['date'] if release_commits else '',
+            'commit_count': len(release_commits),
+            'is_virtual': False
+        })
+    
+    # Sort by date (most recent first)
+    releases_list.sort(key=lambda r: r['start_date'] if r['start_date'] else '', reverse=True)
+    
+    return releases_list
+
+
+def generate_markdown_by_release(releases, release_data):
+    """
+    Generate markdown structured by releases.
+    
+    Args:
+        releases: List of release dictionaries
+        release_data: Full release data
+    
+    Returns:
+        List of markdown lines
+    """
+    md_lines = []
+    repo_url = release_data['repository']['url']
+    
+    # Type display names and emojis
+    type_info = {
+        'feat': ('✨ Features', '✨'),
+        'fix': ('🐛 Bug Fixes', '🐛'),
+        'docs': ('📚 Documentation', '📚'),
+        'chore': ('🔧 Chores & Maintenance', '🔧'),
+        'other': ('📦 Other Changes', '📦')
+    }
+    
+    for release in releases:
+        # Release header
+        release_emoji = '🚀' if release['is_virtual'] else '🏷️'
+        md_lines.append(f"## {release_emoji} {release['tag']}")
+        md_lines.append("")
+        md_lines.append(f"**Commits:** {release['commit_count']} | **Period:** {release['start_date']} to {release['end_date']}")
+        md_lines.append("")
+        
+        # Group commits by type
+        commits_by_type = {
+            'feat': [],
+            'fix': [],
+            'docs': [],
+            'chore': [],
+            'other': []
+        }
+        
+        for commit in release['commits']:
+            commit_type = commit.get('type', 'other')
+            commits_by_type[commit_type].append(commit)
+        
+        # Category summary
+        category_summary = []
+        for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+            count = len(commits_by_type[commit_type])
+            if count > 0:
+                title, emoji = type_info[commit_type]
+                category_summary.append(f"{emoji} {title.split(' ', 1)[1] if ' ' in title else title}: {count}")
+        
+        if category_summary:
+            md_lines.append("**Summary:** " + " | ".join(category_summary))
+            md_lines.append("")
+        
+        # Generate sections for each type
+        for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+            commits = commits_by_type[commit_type]
+            if not commits:
+                continue
+            
+            title, emoji = type_info[commit_type]
+            md_lines.append(f"### {title}")
+            md_lines.append("")
+            
+            for commit in commits:
+                # Get first line of message
+                first_line = commit['message'].split('\n')[0]
+                
+                # Format: - message (hash) by author
+                if repo_url:
+                    commit_link = f"[`{commit['short_hash']}`]({repo_url}/commit/{commit['hash']})"
+                else:
+                    commit_link = f"`{commit['short_hash']}`"
+                
+                md_lines.append(f"- {first_line} ({commit_link}) - *{commit['author']}*")
+                md_lines.append(f"  - 📊 {commit['files_changed']} files, +{commit['insertions']}/-{commit['deletions']} lines")
+                md_lines.append("")
+            
+            md_lines.append("")
+        
+        md_lines.append("---")
+        md_lines.append("")
+    
+    # Overall summary
+    md_lines.append("## 📈 Overall Summary")
+    md_lines.append("")
+    
+    total_commits = sum(r['commit_count'] for r in releases)
+    all_commits = [c for r in releases for c in r['commits']]
+    total_files = sum(c['files_changed'] for c in all_commits)
+    total_insertions = sum(c['insertions'] for c in all_commits)
+    total_deletions = sum(c['deletions'] for c in all_commits)
+    
+    md_lines.append(f"- **Total Releases:** {len(releases)}")
+    md_lines.append(f"- **Total Commits:** {total_commits}")
+    md_lines.append(f"- **Files Changed:** {total_files}")
+    md_lines.append(f"- **Insertions:** +{total_insertions}")
+    md_lines.append(f"- **Deletions:** -{total_deletions}")
+    md_lines.append("")
+    
+    return md_lines
+
+
+def generate_markdown_by_type(release_data):
+    """
+    Generate markdown structured by commit date (chronological order).
+    
+    Args:
+        release_data: Full release data
+    
+    Returns:
+        List of markdown lines
+    """
+    md_lines = []
+    repo_url = release_data['repository']['url']
+    
+    # Type display names and emojis
+    type_info = {
+        'feat': ('✨ Features', '✨'),
+        'fix': ('🐛 Bug Fixes', '🐛'),
+        'docs': ('📚 Documentation', '📚'),
+        'chore': ('🔧 Chores & Maintenance', '🔧'),
+        'other': ('📦 Other Changes', '📦')
+    }
+    
+    # Show commits in chronological order (already sorted by date in the data)
+    md_lines.append("## 📋 Commits")
+    md_lines.append("")
+    
+    for commit in release_data['commits']:
+        commit_type = commit.get('type', 'other')
+        type_label, emoji = type_info.get(commit_type, ('Other', '📦'))
+        
+        # Get first line of message
+        first_line = commit['message'].split('\n')[0]
+        
+        # Format: - [emoji] message (hash) by author - date
+        if repo_url:
+            commit_link = f"[`{commit['short_hash']}`]({repo_url}/commit/{commit['hash']})"
+        else:
+            commit_link = f"`{commit['short_hash']}`"
+        
+        md_lines.append(f"- {emoji} **[{commit_type.upper()}]** {first_line}")
+        md_lines.append(f"  - {commit_link} - *{commit['author']}* - {commit['date']}")
+        
+        # Add tags if present
+        if 'tags' in commit and commit['tags']:
+            tags_str = ', '.join([f'`{tag}`' for tag in commit['tags']])
+            md_lines.append(f"  - 🏷️ Tags: {tags_str}")
+        
+        # Add stats
+        md_lines.append(f"  - 📊 {commit['files_changed']} files, +{commit['insertions']}/-{commit['deletions']} lines")
+        md_lines.append("")
+    
+    # Summary statistics
+    md_lines.append("---")
+    md_lines.append("")
+    md_lines.append("## 📈 Summary")
+    md_lines.append("")
+    
+    # Group commits by type for summary
+    commits_by_type = {
+        'feat': [],
+        'fix': [],
+        'docs': [],
+        'chore': [],
+        'other': []
+    }
+    
+    for commit in release_data['commits']:
+        commit_type = commit.get('type', 'other')
+        commits_by_type[commit_type].append(commit)
+    
+    total_commits = len(release_data['commits'])
+    total_files = sum(c['files_changed'] for c in release_data['commits'])
+    total_insertions = sum(c['insertions'] for c in release_data['commits'])
+    total_deletions = sum(c['deletions'] for c in release_data['commits'])
+    
+    md_lines.append(f"- **Total Commits:** {total_commits}")
+    md_lines.append(f"- **Files Changed:** {total_files}")
+    md_lines.append(f"- **Insertions:** +{total_insertions}")
+    md_lines.append(f"- **Deletions:** -{total_deletions}")
+    md_lines.append("")
+    
+    # Breakdown by type
+    md_lines.append("### Breakdown by Type")
+    md_lines.append("")
+    for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+        count = len(commits_by_type[commit_type])
+        if count > 0:
+            title, emoji = type_info[commit_type]
+            # Extract text without emoji (split at first space and take second part)
+            title_text = title.split(' ', 1)[1] if ' ' in title else title
+            md_lines.append(f"- {emoji} {title_text}: {count}")
+    md_lines.append("")
+    
+    return md_lines
 
 
 def main():
@@ -205,6 +522,13 @@ def main():
         help='Branch to analyze (default: main)'
     )
     
+    parser.add_argument(
+        '--markdown',
+        type=str,
+        default=None,
+        help='Optional output markdown file path (e.g., RELEASE_NOTES.md)'
+    )
+    
     args = parser.parse_args()
     
     # Export release notes
@@ -212,7 +536,8 @@ def main():
         args.repo_path,
         args.num_commits,
         args.output,
-        args.branch
+        args.branch,
+        args.markdown
     )
 
 
