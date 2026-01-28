@@ -12,6 +12,11 @@ from datetime import datetime
 from pathlib import Path
 
 
+def timestamp_to_date(timestamp):
+    """Convert Unix timestamp to date string (YYYY-MM-DD HH:MM:SS)."""
+    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+
 def classify_commit(first_line, author, full_message):
     """Classify commit type using conventional prefix and heuristics."""
     author_l = (author or '').lower()
@@ -21,14 +26,24 @@ def classify_commit(first_line, author, full_message):
     # Conventional commit prefix
     if ':' in first_line:
         prefix = first_line.split(':', 1)[0].strip().lower()
-        if prefix in ['chore', 'ci', 'build', 'test', 'refactor', 'perf']:
-            return 'chore'
         if prefix in ['feat']:
             return 'feat'
         if prefix in ['fix']:
             return 'fix'
         if prefix in ['docs']:
             return 'docs'
+        if prefix in ['style']:
+            return 'style'
+        if prefix in ['refactor']:
+            return 'refactor'
+        if prefix in ['test']:
+            return 'test'
+        if prefix in ['perf']:
+            return 'perf'
+        if prefix in ['ci', 'build', 'ops']:
+            return 'ops'
+        if prefix in ['chore']:
+            return 'chore'
 
     # Author-based heuristic (bots/dependency updaters)
     if 'renovate' in author_l or 'dependabot' in author_l:
@@ -41,7 +56,17 @@ def classify_commit(first_line, author, full_message):
         return 'docs'
     if any(word in first_l for word in ['feat', 'feature', 'add ', 'introduce', 'implement', 'new ', 'ajout ']):
         return 'feat'
-    if any(word in first_l for word in ['update', 'bump', 'upgrade', 'deps', 'dependency', 'refactor', 'cleanup', 'chore']):
+    if any(word in first_l for word in ['style', 'format', 'prettier', 'eslint']):
+        return 'style'
+    if any(word in first_l for word in ['refactor', 'restructur', 'reorganiz']):
+        return 'refactor'
+    if any(word in first_l for word in ['test', 'testing', 'spec', 'coverage']):
+        return 'test'
+    if any(word in first_l for word in ['perf', 'performance', 'optim', 'faster']):
+        return 'perf'
+    if any(word in first_l for word in [' ci ', 'pipeline', 'workflow', 'action', 'build', 'compile', 'bundle', 'deploy']):
+        return 'ops'
+    if any(word in first_l for word in ['update', 'bump', 'upgrade', 'deps', 'dependency', 'cleanup', 'chore']):
         return 'chore'
     if any(word in full_l for word in ['dependency', 'renovate', 'bump']):
         return 'chore'
@@ -93,8 +118,6 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
                 'short_hash': commit.hexsha[:7],
                 'author': commit.author.name,
                 'email': commit.author.email,
-                'date': datetime.fromtimestamp(commit.authored_date).strftime('%Y-%m-%d %H:%M:%S'),
-                'date_iso': datetime.fromtimestamp(commit.authored_date).isoformat(),
                 'timestamp': commit.authored_date,
                 'message': commit.message.strip(),
                 'message_short': first_line[:100],
@@ -258,8 +281,8 @@ def parse_releases(commits):
         releases_list.append({
             'tag': 'Incoming',
             'commits': incoming_commits,
-            'start_date': incoming_commits[0]['date'] if incoming_commits else '',
-            'end_date': incoming_commits[-1]['date'] if incoming_commits else '',
+            'start_date': timestamp_to_date(incoming_commits[0]['timestamp']) if incoming_commits else '',
+            'end_date': timestamp_to_date(incoming_commits[-1]['timestamp']) if incoming_commits else '',
             'commit_count': len(incoming_commits),
             'is_virtual': True
         })
@@ -275,8 +298,8 @@ def parse_releases(commits):
         releases_list.append({
             'tag': ' / '.join(current_group['tags']),  # Merge multiple tags on same commit
             'commits': release_commits,
-            'start_date': release_commits[0]['date'] if release_commits else '',
-            'end_date': release_commits[-1]['date'] if release_commits else '',
+            'start_date': timestamp_to_date(release_commits[0]['timestamp']) if release_commits else '',
+            'end_date': timestamp_to_date(release_commits[-1]['timestamp']) if release_commits else '',
             'commit_count': len(release_commits),
             'is_virtual': False
         })
@@ -306,8 +329,13 @@ def generate_markdown_by_release(releases, release_data):
         'feat': ('✨ Features', '✨'),
         'fix': ('🐛 Bug Fixes', '🐛'),
         'docs': ('📚 Documentation', '📚'),
-        'chore': ('🔧 Chores & Maintenance', '🔧'),
-        'other': ('📦 Other Changes', '📦')
+        'style': ('💎 Code Style', '💎'),
+        'refactor': ('♻️ Code Refactoring', '♻️'),
+        'test': ('✅ Tests', '✅'),
+        'perf': ('⚡ Performance', '⚡'),
+        'ops': ('🚀 CI/CD & Build', '🚀'),
+        'chore': ('🔧 Chores', '🔧'),
+        'other': ('📌 Other Changes', '📌')
     }
     
     for release in releases:
@@ -323,6 +351,11 @@ def generate_markdown_by_release(releases, release_data):
             'feat': [],
             'fix': [],
             'docs': [],
+            'style': [],
+            'refactor': [],
+            'test': [],
+            'perf': [],
+            'ops': [],
             'chore': [],
             'other': []
         }
@@ -333,7 +366,7 @@ def generate_markdown_by_release(releases, release_data):
         
         # Category summary
         category_summary = []
-        for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+        for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
             count = len(commits_by_type[commit_type])
             if count > 0:
                 title, emoji = type_info[commit_type]
@@ -344,7 +377,7 @@ def generate_markdown_by_release(releases, release_data):
             md_lines.append("")
         
         # Generate sections for each type
-        for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+        for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
             commits = commits_by_type[commit_type]
             if not commits:
                 continue
@@ -363,7 +396,7 @@ def generate_markdown_by_release(releases, release_data):
                 else:
                     commit_link = f"`{commit['short_hash']}`"
                 
-                md_lines.append(f"- {first_line} ({commit_link}) - *{commit['author']}*")
+                md_lines.append(f"- {first_line} ({commit_link}) - *{commit['author']}* - {timestamp_to_date(commit['timestamp'])}")
                 md_lines.append(f"  - 📊 {commit['files_changed']} files, +{commit['insertions']}/-{commit['deletions']} lines")
                 md_lines.append("")
             
@@ -410,8 +443,13 @@ def generate_markdown_by_type(release_data):
         'feat': ('✨ Features', '✨'),
         'fix': ('🐛 Bug Fixes', '🐛'),
         'docs': ('📚 Documentation', '📚'),
-        'chore': ('🔧 Chores & Maintenance', '🔧'),
-        'other': ('📦 Other Changes', '📦')
+        'style': ('💎 Code Style', '💎'),
+        'refactor': ('♻️ Code Refactoring', '♻️'),
+        'test': ('✅ Tests', '✅'),
+        'perf': ('⚡ Performance', '⚡'),
+        'ops': ('🚀 CI/CD & Build', '🚀'),
+        'chore': ('🔧 Chores', '🔧'),
+        'other': ('📌 Other Changes', '📌')
     }
     
     # Show commits in chronological order (already sorted by date in the data)
@@ -432,7 +470,7 @@ def generate_markdown_by_type(release_data):
             commit_link = f"`{commit['short_hash']}`"
         
         md_lines.append(f"- {emoji} **[{commit_type.upper()}]** {first_line}")
-        md_lines.append(f"  - {commit_link} - *{commit['author']}* - {commit['date']}")
+        md_lines.append(f"  - {commit_link} - *{commit['author']}* - {timestamp_to_date(commit['timestamp'])}")
         
         # Add tags if present
         if 'tags' in commit and commit['tags']:
@@ -454,6 +492,11 @@ def generate_markdown_by_type(release_data):
         'feat': [],
         'fix': [],
         'docs': [],
+        'style': [],
+        'refactor': [],
+        'test': [],
+        'perf': [],
+        'ops': [],
         'chore': [],
         'other': []
     }
@@ -476,7 +519,7 @@ def generate_markdown_by_type(release_data):
     # Breakdown by type
     md_lines.append("### Breakdown by Type")
     md_lines.append("")
-    for commit_type in ['feat', 'fix', 'docs', 'chore', 'other']:
+    for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
         count = len(commits_by_type[commit_type])
         if count > 0:
             title, emoji = type_info[commit_type]

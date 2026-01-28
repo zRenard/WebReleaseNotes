@@ -307,6 +307,26 @@ h1 {
     background: #0969da;
 }
 
+.summary-card.style::before {
+    background: #8e24aa;
+}
+
+.summary-card.refactor::before {
+    background: #00acc1;
+}
+
+.summary-card.test::before {
+    background: #7cb342;
+}
+
+.summary-card.perf::before {
+    background: #fbc02d;
+}
+
+.summary-card.ops::before {
+    background: #546e7a;
+}
+
 .summary-card.chore::before {
     background: #fb8500;
 }
@@ -332,6 +352,31 @@ h1 {
 .summary-card.docs.active {
     background: #e6f2ff;
     border-color: #0969da;
+}
+
+.summary-card.style.active {
+    background: #f3e5f5;
+    border-color: #8e24aa;
+}
+
+.summary-card.refactor.active {
+    background: #e0f7fa;
+    border-color: #00acc1;
+}
+
+.summary-card.test.active {
+    background: #f1f8e9;
+    border-color: #7cb342;
+}
+
+.summary-card.perf.active {
+    background: #fffde7;
+    border-color: #fbc02d;
+}
+
+.summary-card.ops.active {
+    background: #eceff1;
+    border-color: #546e7a;
 }
 
 .summary-card.chore.active {
@@ -373,6 +418,26 @@ h1 {
 
 .summary-card.docs .number {
     color: #0969da;
+}
+
+.summary-card.style .number {
+    color: #8e24aa;
+}
+
+.summary-card.refactor .number {
+    color: #00acc1;
+}
+
+.summary-card.test .number {
+    color: #7cb342;
+}
+
+.summary-card.perf .number {
+    color: #fbc02d;
+}
+
+.summary-card.ops .number {
+    color: #546e7a;
 }
 
 .summary-card.chore .number {
@@ -552,6 +617,26 @@ h1 {
 
 .timeline-commit.type-docs {
     background: #0969da;
+}
+
+.timeline-commit.type-style {
+    background: #8e24aa;
+}
+
+.timeline-commit.type-refactor {
+    background: #00acc1;
+}
+
+.timeline-commit.type-test {
+    background: #7cb342;
+}
+
+.timeline-commit.type-perf {
+    background: #fbc02d;
+}
+
+.timeline-commit.type-ops {
+    background: #546e7a;
 }
 
 .timeline-commit.type-chore {
@@ -846,6 +931,27 @@ h1 {
 
 .commit-type.type-docs {
     background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.commit-type.type-style {
+    background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+}
+
+.commit-type.type-refactor {
+    background: linear-gradient(135deg, #00BCD4, #0097A7);
+}
+
+.commit-type.type-test {
+    background: linear-gradient(135deg, #8BC34A, #689F38);
+}
+
+.commit-type.type-perf {
+    background: linear-gradient(135deg, #FFEB3B, #F9A825);
+    color: #333;
+}
+
+.commit-type.type-ops {
+    background: linear-gradient(135deg, #607D8B, #455A64);
 }
 
 .commit-type.type-chore {
@@ -1181,6 +1287,36 @@ h1 {
 .release-category-badge.docs {
     border-color: #0969da;
     background: #e6f2ff;
+    color: #24292e;
+}
+
+.release-category-badge.style {
+    border-color: #8e24aa;
+    background: #f3e5f5;
+    color: #24292e;
+}
+
+.release-category-badge.refactor {
+    border-color: #00acc1;
+    background: #e0f7fa;
+    color: #24292e;
+}
+
+.release-category-badge.test {
+    border-color: #7cb342;
+    background: #f1f8e9;
+    color: #24292e;
+}
+
+.release-category-badge.perf {
+    border-color: #fbc02d;
+    background: #fffde7;
+    color: #24292e;
+}
+
+.release-category-badge.ops {
+    border-color: #546e7a;
+    background: #eceff1;
     color: #24292e;
 }
 

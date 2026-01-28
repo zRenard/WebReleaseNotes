@@ -1,10 +1,27 @@
 const TYPE_LABELS = {
-    'feat': { label: 'Features', icon: '✨', emoji: '🎉' },
-    'fix': { label: 'Bug Fixes', icon: '🐛', emoji: '🔧' },
-    'docs': { label: 'Documentation', icon: '📝', emoji: '📚' },
-    'chore': { label: 'Chores & Maintenance', icon: '🔧', emoji: '⚙️' },
-    'other': { label: 'Other Changes', icon: '📦', emoji: '📌' }
+    'feat': { label: 'Features', icon: '✨', emoji: '✨' },
+    'fix': { label: 'Bug Fixes', icon: '🐛', emoji: '🐛' },
+    'docs': { label: 'Documentation', icon: '📚', emoji: '📚' },
+    'style': { label: 'Code Style', icon: '💎', emoji: '💎' },
+    'refactor': { label: 'Code Refactoring', icon: '♻️', emoji: '♻️' },
+    'test': { label: 'Tests', icon: '✅', emoji: '✅' },
+    'perf': { label: 'Performance', icon: '⚡', emoji: '⚡' },
+    'ops': { label: 'CI/CD & Build', icon: '🚀', emoji: '🚀' },
+    'chore': { label: 'Chores', icon: '🔧', emoji: '🔧' },
+    'other': { label: 'Other Changes', icon: '📌', emoji: '📌' }
 };
+
+// Helper function to format timestamp to date string (YYYY-MM-DD HH:MM:SS)
+function formatTimestampToDate(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 let currentViewMode = 'commit'; // 'commit' or 'release'
 let globalData = null; // Store data globally for mode switching
@@ -206,7 +223,7 @@ function displayReleaseView(selectedReleaseTag) {
     // Build HTML for releases
     const releaseHTML = releasesToDisplay.map(release => {
         // Group commits by type
-        const grouped = { feat: [], fix: [], docs: [], chore: [], other: [] };
+        const grouped = { feat: [], fix: [], docs: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
         release.commits.forEach(c => {
             const t = (c.type || 'other').toLowerCase();
             if (grouped[t]) {
@@ -281,7 +298,7 @@ function updateSummaryForReleaseView(releasesToDisplay) {
     const totalCommits = releasesToDisplay.reduce((sum, r) => sum + r.commitCount, 0);
     
     // Aggregate counts by type
-    const aggregated = { feat: 0, fix: 0, docs: 0, chore: 0, other: 0, total: totalCommits };
+    const aggregated = { feat: 0, fix: 0, docs: 0, style: 0, refactor: 0, test: 0, perf: 0, ops: 0, chore: 0, other: 0, total: totalCommits };
     releasesToDisplay.forEach(release => {
         release.commits.forEach(c => {
             const t = (c.type || 'other').toLowerCase();
@@ -396,34 +413,35 @@ function displaySummary(summary, commits) {
 function buildTimeline(commits) {
     if (!commits || commits.length === 0) return '';
     
-    // Get first and last commit timestamps
-    const timestamps = commits.map(c => c.timestamp).sort((a, b) => a - b);
-    const firstTime = timestamps[0];
-    const lastTime = timestamps[timestamps.length - 1];
-    const timeRange = lastTime - firstTime || 1; // Avoid division by zero
+    // Get first and last commit timestamps (commits are in descending chronological order)
+    const timestamps = commits.map(c => c.timestamp);
+    const oldestTime = Math.min(...timestamps);
+    const newestTime = Math.max(...timestamps);
+    const timeRange = newestTime - oldestTime || 1; // Avoid division by zero
     
-    // Build commit markers and tag markers
+    // Build commit markers and tag markers (left = oldest, right = newest)
     const markers = commits.map(commit => {
-        const position = ((commit.timestamp - firstTime) / timeRange) * 100;
+        const position = ((commit.timestamp - oldestTime) / timeRange) * 100;
         const leftClass = 'left-' + Math.round(position);
         const typeKey = (commit.type || 'other').toLowerCase();
-        const title = `${commit.message_short} (${commit.date})`;
+        const dateStr = formatTimestampToDate(commit.timestamp);
+        const title = `${commit.message_short} (${dateStr})`;
         
         // Check if commit has tags
         if (commit.tags && commit.tags.length > 0) {
-            const tagTitle = `TAG: ${commit.tags.join(', ')} - ${commit.message_short} (${commit.date})`;
+            const tagTitle = `TAG: ${commit.tags.join(', ')} - ${commit.message_short} (${dateStr})`;
             return `<div class="timeline-tag ${leftClass}" title="${tagTitle.replace(/"/g, '&quot;')}" data-commit-hash="${commit.hash}" data-is-tag="true"></div>`;
         }
         
         return `<div class="timeline-commit type-${typeKey} ${leftClass}" title="${title.replace(/"/g, '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
     }).join('');
     
-    // Build graduation marks (10 marks across the timeline)
+    // Build graduation marks (10 marks across the timeline, left = oldest, right = newest)
     const graduations = [];
     for (let i = 0; i <= 10; i++) {
         const position = (i / 10) * 100;
         const leftClass = 'left-' + Math.round(position);
-        const timestamp = firstTime + (timeRange / 10) * i;
+        const timestamp = oldestTime + (timeRange / 10) * i;
         const date = new Date(timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         graduations.push(`
             <div class="timeline-graduation ${leftClass}">
@@ -434,9 +452,9 @@ function buildTimeline(commits) {
     }
     const graduationHTML = graduations.join('');
     
-    // Format dates
-    const firstDate = new Date(firstTime * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const lastDate = new Date(lastTime * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    // Format dates (left = oldest, right = newest)
+    const oldestDate = new Date(oldestTime * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const newestDate = new Date(newestTime * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     
     const timelineHTML = `
         <div class="commit-timeline">
@@ -450,8 +468,8 @@ function buildTimeline(commits) {
                 </div>
             </div>
             <div class="timeline-dates">
-                <span>${firstDate}</span>
-                <span>${lastDate}</span>
+                <span>${oldestDate}</span>
+                <span>${newestDate}</span>
             </div>
             <div class="timeline-zoom">
                 <span class="timeline-zoom-label">Zoom</span>
@@ -649,7 +667,7 @@ function displayCommits(data) {
     container.innerHTML = '';
     
     // Build a reliable grouping from commits using commit.type field
-    const grouped = { feat: [], fix: [], docs: [], chore: [], other: [] };
+    const grouped = { feat: [], fix: [], docs: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
     if (Array.isArray(data.commits)) {
         data.commits.forEach(c => {
             const t = (c.type || 'other').toLowerCase();
@@ -667,8 +685,13 @@ function displayCommits(data) {
         feat: (grouped.feat || []).length,
         fix: (grouped.fix || []).length,
         docs: (grouped.docs || []).length,
+        style: (grouped.style || []).length,
+        refactor: (grouped.refactor || []).length,
+        test: (grouped.test || []).length,
+        perf: (grouped.perf || []).length,
+        ops: (grouped.ops || []).length,
         chore: (grouped.chore || []).length,
-        other: (grouped.other || []).length,
+        other: (grouped.other || []).length
     };
     displaySummary(summary, data.commits);
     
@@ -714,7 +737,7 @@ function createCommitHTML(commit, repoUrl) {
                     <span class="commit-type ${typeClass}" title="${typeInfo.label}">${typeInfo.label}</span>
                     ${tagBadges}
                 </div>
-                <span class="commit-date">${commit.date}</span>
+                <span class="commit-date">${formatTimestampToDate(commit.timestamp)}</span>
             </div>
             <div class="commit-summary">${summaryText}</div>
             <div class="commit-body collapsed" id="${bodyId}">
