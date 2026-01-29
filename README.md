@@ -60,6 +60,7 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    - `--num_commits N`: Number of commits to include (default: 10)
    - `--output FILE`: Output JSON file path (default: release_notes.json)
    - `--markdown FILE`: Optional markdown file path (e.g., RELEASE_NOTES.md)
+   - `--latest_release_only`: Generate markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
    - `--repo_path PATH`: Path to the repository (default: current directory)
    - `--branch BRANCH`: Branch to analyze (default: main)
 

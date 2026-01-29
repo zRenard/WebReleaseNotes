@@ -140,7 +140,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
     return commits_data
 
 
-def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None):
+def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False):
     """
     Export commit messages from current repository to JSON for release notes.
     
@@ -194,7 +194,7 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     
     # Generate markdown file if requested
     if markdown_path:
-        markdown_content = generate_markdown(release_data)
+        markdown_content = generate_markdown(release_data, latest_release_only=latest_release_only)
         with open(markdown_path, 'w', encoding='utf-8') as f:
             f.write(markdown_content)
         print(f"[OK] Generated markdown file: {markdown_path}")
@@ -202,7 +202,7 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     return release_data
 
 
-def generate_markdown(release_data):
+def generate_markdown(release_data, latest_release_only=False):
     """
     Generate markdown formatted release notes from release data.
     
@@ -230,6 +230,10 @@ def generate_markdown(release_data):
     releases = parse_releases(release_data['commits'])
     
     if releases:
+        if latest_release_only:
+            latest_release = next((release for release in releases if not release['is_virtual']), None)
+            if latest_release:
+                releases = [latest_release]
         # Structure by releases
         md_lines.extend(generate_markdown_by_release(releases, release_data))
     else:
@@ -568,8 +572,17 @@ def main():
     parser.add_argument(
         '--markdown',
         type=str,
-        default=None,
-        help='Optional output markdown file path (e.g., RELEASE_NOTES.md)'
+        nargs='?',
+        const='RELEASE_NOTES.md',
+        default='RELEASE_NOTES.md',
+        help='Optional output markdown file path (e.g., RELEASE_NOTES.md). If provided without a value, uses the default.'
+    )
+
+    parser.add_argument(
+        '--latest_release_only',
+        action='store_true',
+        help='Generate markdown only for the latest tagged release (ignores Incoming and older releases). '
+             'If no tags are found, output remains unchanged.'
     )
     
     args = parser.parse_args()
@@ -580,7 +593,8 @@ def main():
         args.num_commits,
         args.output,
         args.branch,
-        args.markdown
+        args.markdown,
+        latest_release_only=args.latest_release_only
     )
 
 
