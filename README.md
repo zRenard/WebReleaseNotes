@@ -13,6 +13,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 🌐 **GitHub Integration**: Direct links to commits and repository
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
+- 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in markdown output
 
 ## Description
 
@@ -60,7 +61,8 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    - `--num_commits N`: Number of commits to include (default: 10)
    - `--output FILE`: Output JSON file path (default: release_notes.json)
    - `--markdown FILE`: Optional markdown file path (e.g., RELEASE_NOTES.md)
-   - `--latest_release_only`: Generate markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
+   - `--md_timeline`: Include timeline visualization in markdown output (default: False)
+   - `--md_latest_release_only`: Generate markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
    - `--repo_path PATH`: Path to the repository (default: current directory)
    - `--branch BRANCH`: Branch to analyze (default: main)
 
@@ -199,15 +201,30 @@ When using the `--markdown` option, the script generates a formatted markdown fi
   - Each release section shows commit count, date range, and category summary
   - Commits are grouped by type within each release
   - Includes an overall summary at the end
+  - **Optional Timeline**: Use `--md_timeline` to include an ASCII visual timeline with date grouping, commit types (with emojis), and statistics for each release
+  - **Latest Release Only**: Use `--md_latest_release_only` to generate markdown for only the most recent tagged release, ignoring "Incoming" commits and older releases (useful for focused release announcements)
 
 - **Without Release Tags**: Lists commits chronologically by date (matching the HTML "By Commit" view)
   - Each commit shows type badge, message, author, and date
   - Includes statistics and breakdown by type at the end
+  - **Optional Timeline**: Use `--md_timeline` to include an ASCII visual timeline showing all commits grouped by date
+
+The timeline visualization features:
+- 📅 Date grouping with chronological ordering (latest first)
+- ✨ Emoji indicators for commit types (features, fixes, docs, etc.)
+- 🌳 Tree-style ASCII structure using box-drawing characters
+- 📊 Statistics summary (insertions, deletions, files changed)
 
 Example usage:
 ```bash
 # Generate both JSON and markdown
 python release_notes.py --markdown RELEASE_NOTES.md --num_commits 50
+
+# Generate markdown with timeline visualization
+python release_notes.py --markdown RELEASE_NOTES.md --md_timeline --num_commits 50
+
+# Generate only latest release with timeline
+python release_notes.py --markdown RELEASE_NOTES.md --md_timeline --md_latest_release_only --num_commits 50
 
 # Analyze a different repository
 python release_notes.py --repo_path ../my-project --markdown RELEASE_NOTES.md

@@ -140,7 +140,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
     return commits_data
 
 
-def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False):
+def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False, include_timeline=False):
     """
     Export commit messages from current repository to JSON for release notes.
     
@@ -150,6 +150,8 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
         output_path: Path to save JSON file
         branch: Branch to analyze
         markdown_path: Optional path to save markdown file
+        latest_release_only: Only include latest release in markdown
+        include_timeline: Include timeline visualization in markdown
     """
     print(f"[*] Extracting {num_commits} commits from branch '{branch}'...")
     
@@ -194,7 +196,7 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     
     # Generate markdown file if requested
     if markdown_path:
-        markdown_content = generate_markdown(release_data, latest_release_only=latest_release_only)
+        markdown_content = generate_markdown(release_data, latest_release_only=latest_release_only, include_timeline=include_timeline)
         with open(markdown_path, 'w', encoding='utf-8') as f:
             f.write(markdown_content)
         print(f"[OK] Generated markdown file: {markdown_path}")
@@ -202,12 +204,14 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     return release_data
 
 
-def generate_markdown(release_data, latest_release_only=False):
+def generate_markdown(release_data, latest_release_only=False, include_timeline=False):
     """
     Generate markdown formatted release notes from release data.
     
     Args:
         release_data: Dictionary containing release note data
+        latest_release_only: Only include latest release
+        include_timeline: Include timeline visualization
     
     Returns:
         Markdown formatted string
@@ -235,10 +239,10 @@ def generate_markdown(release_data, latest_release_only=False):
             if latest_release:
                 releases = [latest_release]
         # Structure by releases
-        md_lines.extend(generate_markdown_by_release(releases, release_data))
+        md_lines.extend(generate_markdown_by_release(releases, release_data, include_timeline=include_timeline))
     else:
         # Structure by commit type (original behavior)
-        md_lines.extend(generate_markdown_by_type(release_data))
+        md_lines.extend(generate_markdown_by_type(release_data, include_timeline=include_timeline))
     
     return '\n'.join(md_lines)
 
@@ -314,13 +318,190 @@ def parse_releases(commits):
     return releases_list
 
 
-def generate_markdown_by_release(releases, release_data):
+def get_type_emoji(commit_type):
+    """Get emoji for commit type."""
+    type_emojis = {
+        'feat': '✨',
+        'fix': '🐛',
+        'docs': '📚',
+        'style': '💎',
+        'refactor': '♻️',
+        'test': '✅',
+        'perf': '⚡',
+        'ops': '🚀',
+        'chore': '🔧',
+        'other': '📌'
+    }
+    return type_emojis.get(commit_type, '📌')
+
+
+def generate_single_release_timeline(release):
+    """
+    Generate timeline visualization for a single release.
+    
+    Args:
+        release: Release dictionary
+    
+    Returns:
+        String containing the timeline markdown
+    """
+    lines = ['```']
+    
+    # Release header with date/time
+    release_emoji = '🚀' if release['is_virtual'] else '🏷️'
+    lines.append(f"{release_emoji} {release['tag']} ━━━━━━━━━━━━━━━━━━━━")
+    # Format date without seconds (HH:MM only)
+    release_date_short = release['start_date'].rsplit(':', 1)[0] if ':' in release['start_date'] else release['start_date']
+    lines.append(f"│ 📅 {release_date_short}")
+    
+    # Sort commits by timestamp (oldest first within this release)
+    sorted_commits = sorted(release['commits'], key=lambda c: c['timestamp'])
+    
+    # Group commits by date
+    commits_by_date = {}
+    for commit in sorted_commits:
+        commit_date = timestamp_to_date(commit['timestamp']).split()[0]  # Get just the date part
+        if commit_date not in commits_by_date:
+            commits_by_date[commit_date] = []
+        commits_by_date[commit_date].append(commit)
+    
+    # Sort dates chronologically (convert to datetime for proper sorting) - latest first
+    from datetime import datetime as dt
+    sorted_dates = sorted(commits_by_date.keys(), key=lambda d: dt.strptime(d, '%Y-%m-%d'), reverse=True)
+    
+    # Iterate through dates in order
+    for date_idx, commit_date in enumerate(sorted_dates):
+        commits_on_date = commits_by_date[commit_date]
+        is_last_date = (date_idx == len(sorted_dates) - 1)
+        
+        # Date header
+        date_connector = '└─' if is_last_date else '├─'
+        lines.append(f"│ {date_connector} 📆 {commit_date}")
+        
+        # Commits for this date
+        for commit_idx, commit in enumerate(commits_on_date):
+            is_last_commit = (commit_idx == len(commits_on_date) - 1)
+            
+            emoji = get_type_emoji(commit.get('type', 'other'))
+            
+            if is_last_date:
+                # For last date, use spaces for vertical alignment
+                if is_last_commit:
+                    commit_line = f"│     └─ {emoji} {commit['message_short'][:60].strip()}"
+                else:
+                    commit_line = f"│     ├─ {emoji} {commit['message_short'][:60].strip()}"
+            else:
+                # For non-last dates, use pipe for continuation
+                if is_last_commit:
+                    commit_line = f"│ │   └─ {emoji} {commit['message_short'][:60].strip()}"
+                else:
+                    commit_line = f"│ │   ├─ {emoji} {commit['message_short'][:60].strip()}"
+            
+            lines.append(commit_line)
+    
+    # Stats
+    total_insertions = sum(c['insertions'] for c in release['commits'])
+    total_deletions = sum(c['deletions'] for c in release['commits'])
+    total_files = sum(c['files_changed'] for c in release['commits'])
+    
+    lines.append(f"└─ 📊 +{total_insertions} / -{total_deletions} / {total_files} files")
+    lines.append('```')
+    
+    return '\n'.join(lines)
+
+
+def generate_vertical_timeline_by_release(releases):
+    """
+    Generate vertical timeline visualization by releases.
+    
+    Args:
+        releases: List of release dictionaries
+    
+    Returns:
+        String containing the timeline markdown
+    """
+    if not releases:
+        return ''
+    
+    lines = ['```']
+    
+    for i, release in enumerate(releases):
+        is_last = (i == len(releases) - 1)
+        
+        # Release header with date/time
+        release_emoji = '🚀' if release['is_virtual'] else '🏷️'
+        lines.append(f"{release_emoji} {release['tag']} ━━━━━━━━━━━━━━━━━━━━")
+        # Format date without seconds (HH:MM only)
+        release_date_short = release['start_date'].rsplit(':', 1)[0] if ':' in release['start_date'] else release['start_date']
+        lines.append(f"│ 📅 {release_date_short}")
+        
+        # Sort commits by timestamp (oldest first within this release)
+        sorted_commits = sorted(release['commits'], key=lambda c: c['timestamp'])
+        
+        # Group commits by date
+        commits_by_date = {}
+        for commit in sorted_commits:
+            commit_date = timestamp_to_date(commit['timestamp']).split()[0]  # Get just the date part
+            if commit_date not in commits_by_date:
+                commits_by_date[commit_date] = []
+            commits_by_date[commit_date].append(commit)
+        
+        # Sort dates chronologically (convert to datetime for proper sorting) - latest first
+        from datetime import datetime as dt
+        sorted_dates = sorted(commits_by_date.keys(), key=lambda d: dt.strptime(d, '%Y-%m-%d'), reverse=True)
+        
+        # Iterate through dates in order
+        for date_idx, commit_date in enumerate(sorted_dates):
+            commits_on_date = commits_by_date[commit_date]
+            is_last_date = (date_idx == len(sorted_dates) - 1)
+            
+            # Date header
+            date_connector = '└─' if is_last_date else '├─'
+            lines.append(f"│ {date_connector} 📆 {commit_date}")
+            
+            # Commits for this date
+            for commit_idx, commit in enumerate(commits_on_date):
+                is_last_commit = (commit_idx == len(commits_on_date) - 1)
+                
+                emoji = get_type_emoji(commit.get('type', 'other'))
+                
+                if is_last_date:
+                    # For last date, use spaces for vertical alignment
+                    if is_last_commit:
+                        commit_line = f"│     └─ {emoji} {commit['message_short'][:60].strip()}"
+                    else:
+                        commit_line = f"│     ├─ {emoji} {commit['message_short'][:60].strip()}"
+                else:
+                    # For non-last dates, use pipe for continuation
+                    if is_last_commit:
+                        commit_line = f"│ │   └─ {emoji} {commit['message_short'][:60].strip()}"
+                    else:
+                        commit_line = f"│ │   ├─ {emoji} {commit['message_short'][:60].strip()}"
+                
+                lines.append(commit_line)
+        
+        # Stats
+        total_insertions = sum(c['insertions'] for c in release['commits'])
+        total_deletions = sum(c['deletions'] for c in release['commits'])
+        total_files = sum(c['files_changed'] for c in release['commits'])
+        
+        lines.append(f"└─ 📊 +{total_insertions} / -{total_deletions} / {total_files} files")
+        
+        if not is_last:
+            lines.append('')
+    
+    lines.append('```')
+    return '\n'.join(lines)
+
+
+def generate_markdown_by_release(releases, release_data, include_timeline=False):
     """
     Generate markdown structured by releases.
     
     Args:
         releases: List of release dictionaries
         release_data: Full release data
+        include_timeline: Include timeline visualization
     
     Returns:
         List of markdown lines
@@ -347,6 +528,13 @@ def generate_markdown_by_release(releases, release_data):
         release_emoji = '🚀' if release['is_virtual'] else '🏷️'
         md_lines.append(f"## {release_emoji} {release['tag']}")
         md_lines.append("")
+        
+        # Add timeline for this release if requested
+        if include_timeline:
+            timeline = generate_single_release_timeline(release)
+            md_lines.append(timeline)
+            md_lines.append("")
+        
         md_lines.append(f"**Commits:** {release['commit_count']} | **Period:** {release['start_date']} to {release['end_date']}")
         md_lines.append("")
         
@@ -429,18 +617,38 @@ def generate_markdown_by_release(releases, release_data):
     return md_lines
 
 
-def generate_markdown_by_type(release_data):
+def generate_markdown_by_type(release_data, include_timeline=False):
     """
     Generate markdown structured by commit date (chronological order).
     
     Args:
         release_data: Full release data
+        include_timeline: Include timeline visualization
     
     Returns:
         List of markdown lines
     """
     md_lines = []
     repo_url = release_data['repository']['url']
+    
+    # Generate timeline for all commits if requested
+    if include_timeline:
+        all_commits_release = {
+            'tag': 'All Commits',
+            'commits': release_data['commits'],
+            'start_date': timestamp_to_date(release_data['commits'][0]['timestamp']) if release_data['commits'] else '',
+            'end_date': timestamp_to_date(release_data['commits'][-1]['timestamp']) if release_data['commits'] else '',
+            'commit_count': len(release_data['commits']),
+            'is_virtual': True
+        }
+        
+        timeline = generate_single_release_timeline(all_commits_release)
+        md_lines.append("## 📈 Timeline")
+        md_lines.append("")
+        md_lines.append(timeline)
+        md_lines.append("")
+        md_lines.append("---")
+        md_lines.append("")
     
     # Type display names and emojis
     type_info = {
@@ -579,10 +787,16 @@ def main():
     )
 
     parser.add_argument(
-        '--latest_release_only',
+        '--md_latest_release_only',
         action='store_true',
         help='Generate markdown only for the latest tagged release (ignores Incoming and older releases). '
              'If no tags are found, output remains unchanged.'
+    )
+    
+    parser.add_argument(
+        '--md_timeline',
+        action='store_true',
+        help='Include timeline visualization in markdown output (default: False)'
     )
     
     args = parser.parse_args()
@@ -594,7 +808,8 @@ def main():
         args.output,
         args.branch,
         args.markdown,
-        latest_release_only=args.latest_release_only
+        latest_release_only=args.md_latest_release_only,
+        include_timeline=args.md_timeline
     )
 
 
