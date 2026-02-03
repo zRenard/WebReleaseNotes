@@ -1388,6 +1388,7 @@ h1 {
         justify-content: flex-start;
     }
 }
+
 /* Search Container */
 .search-container {
     margin: 20px 0;
@@ -1408,7 +1409,7 @@ h1 {
     font-size: 15px;
     border: 2px solid #e1e4e8;
     border-radius: 8px;
-    background-color: #ffffff;
+    background-color: #fff;
     transition: all 0.2s ease;
     outline: none;
 }
