@@ -54,6 +54,11 @@ async function loadReleaseNotes() {
         displayMetadata(data);
         displayCommits(data);
         
+        // Initialize search after commits are displayed
+        setTimeout(() => {
+            initSearch();
+        }, 200);
+        
     } catch (error) {
         console.error('Error loading release notes:', error);
         
@@ -167,6 +172,12 @@ function setupModeButtons() {
             releaseBtn.classList.remove('active');
             releaseSelector.classList.add('hidden');
             displayCommits(globalData);
+            setTimeout(() => {
+                cacheCommitElements();
+                if (searchQuery) {
+                    performSearch(searchQuery);
+                }
+            }, 100);
         });
     }
     
@@ -178,6 +189,12 @@ function setupModeButtons() {
             releaseSelector.classList.remove('hidden');
             populateReleaseDropdown();
             displayReleaseView(null);
+            setTimeout(() => {
+                cacheCommitElements();
+                if (searchQuery) {
+                    performSearch(searchQuery);
+                }
+            }, 100);
         });
     }
     
@@ -185,6 +202,12 @@ function setupModeButtons() {
         releaseDropdown.addEventListener('change', (e) => {
             const selectedRelease = e.target.value;
             displayReleaseView(selectedRelease);
+            setTimeout(() => {
+                cacheCommitElements();
+                if (searchQuery) {
+                    performSearch(searchQuery);
+                }
+            }, 100);
         });
     }
 }
@@ -281,7 +304,7 @@ function displayReleaseView(selectedReleaseTag) {
                 return;
             }
             
-            const releaseTag = panel.getAttribute('data-release-tag');
+            const releaseTag = panel.dataset.releaseTag;
             const dropdown = document.getElementById('release-dropdown');
             if (dropdown && releaseTag) {
                 dropdown.value = releaseTag;
@@ -294,7 +317,6 @@ function displayReleaseView(selectedReleaseTag) {
 }
 
 function updateSummaryForReleaseView(releasesToDisplay) {
-    const summaryEl = document.getElementById('summary');
     const totalCommits = releasesToDisplay.reduce((sum, r) => sum + r.commitCount, 0);
     
     // Aggregate counts by type
@@ -392,7 +414,7 @@ function displaySummary(summary, commits) {
     // Add click handlers for filtering
     document.querySelectorAll('.summary-card').forEach(card => {
         card.addEventListener('click', function() {
-            const filterType = this.getAttribute('data-type');
+            const filterType = this.dataset.type;
             filterCommitsByType(filterType);
             
             // Collapse all commits when showing all
@@ -430,10 +452,10 @@ function buildTimeline(commits) {
         // Check if commit has tags
         if (commit.tags && commit.tags.length > 0) {
             const tagTitle = `TAG: ${commit.tags.join(', ')} - ${commit.message_short} (${dateStr})`;
-            return `<div class="timeline-tag ${leftClass}" title="${tagTitle.replace(/"/g, '&quot;')}" data-commit-hash="${commit.hash}" data-is-tag="true"></div>`;
+            return `<div class="timeline-tag ${leftClass}" title="${tagTitle.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}" data-is-tag="true"></div>`;
         }
         
-        return `<div class="timeline-commit type-${typeKey} ${leftClass}" title="${title.replace(/"/g, '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
+        return `<div class="timeline-commit type-${typeKey} ${leftClass}" title="${title.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
     }).join('');
     
     // Build graduation marks (10 marks across the timeline, left = oldest, right = newest)
@@ -492,7 +514,7 @@ function setupTimelineHandlers() {
     document.querySelectorAll('.timeline-commit').forEach(dot => {
         dot.addEventListener('click', (e) => {
             e.stopPropagation();
-            const hash = dot.getAttribute('data-commit-hash');
+            const hash = dot.dataset.commitHash;
             filterByCommitHash(hash);
             
             // Update timeline active state
@@ -505,7 +527,7 @@ function setupTimelineHandlers() {
     document.querySelectorAll('.timeline-tag').forEach(tag => {
         tag.addEventListener('click', (e) => {
             e.stopPropagation();
-            const hash = tag.getAttribute('data-commit-hash');
+            const hash = tag.dataset.commitHash;
             filterByCommitHash(hash);
             
             // Update timeline active state
@@ -532,12 +554,12 @@ function setupTimelineHandlers() {
         }
 
         // Set initial zoom
-        const initialZoom = parseFloat(zoomSlider.value);
+        const initialZoom = Number.parseFloat(zoomSlider.value);
         setZoomClass(timelineTrack, initialZoom);
         zoomValue.textContent = initialZoom + 'x';
 
         zoomSlider.addEventListener('input', (e) => {
-            const zoom = parseFloat(e.target.value);
+            const zoom = Number.parseFloat(e.target.value);
             setZoomClass(timelineTrack, zoom);
             zoomValue.textContent = zoom + 'x';
         });
@@ -555,12 +577,12 @@ function filterByCommitHash(hash) {
     const commits = document.querySelectorAll('.commit-item');
     
     commits.forEach(commit => {
-        const targetId = commit.getAttribute('data-target');
+        const targetId = commit.dataset.target;
         if (targetId === `commit-${hash}`) {
             commit.classList.remove('hidden');
             // Auto-expand the commit details
             const body = document.getElementById(targetId);
-            if (body && body.classList.contains('collapsed')) {
+            if (body?.classList.contains('collapsed')) {
                 body.classList.remove('collapsed');
                 body.classList.add('expanded');
             }
@@ -592,9 +614,9 @@ function scrollToCommit(hash) {
         commitItem.classList.add('highlight');
         
         // Expand commit details
-        const targetId = commitItem.getAttribute('data-target');
+        const targetId = commitItem.dataset.target;
         const body = document.getElementById(targetId);
-        if (body && body.classList.contains('collapsed')) {
+        if (body?.classList.contains('collapsed')) {
             body.classList.remove('collapsed');
             body.classList.add('expanded');
         }
@@ -618,7 +640,7 @@ function filterCommitsByType(type) {
                 commit.classList.add('hidden');
             }
         } else {
-            const commitType = commit.getAttribute('data-commit-type');
+            const commitType = commit.dataset.commitType;
             if (commitType === type) {
                 commit.classList.remove('hidden');
             } else {
@@ -728,7 +750,7 @@ function createCommitHTML(commit, repoUrl) {
     ).join('') : '';
     
     return `
-        <li class="${commitClass}${tagClass}" data-target="${bodyId}" data-commit-type="${typeKey}">
+        <li class="${commitClass}${tagClass}" data-target="${bodyId}" data-commit-type="${typeKey}" data-commit-hash="${commit.hash}">
             <div class="commit-header">
                 <div class="commit-header-left">
                     <a href="${commitUrl}" target="_blank" class="commit-hash" title="${commit.hash}">
@@ -763,7 +785,7 @@ function setupToggleHandlers() {
                 return; // allow link clicks without toggling
             }
 
-            const targetId = item.getAttribute('data-target');
+            const targetId = item.dataset.target;
             const body = document.getElementById(targetId);
             if (!body) return;
 
@@ -780,4 +802,201 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-loadReleaseNotes();
+// Search functionality
+let searchQuery = '';
+let allCommitElements = [];
+
+function initSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchClearBtn = document.getElementById('search-clear');
+    const searchContainer = document.getElementById('search-container');
+    
+    if (!searchInput || !searchClearBtn || !searchContainer) return;
+    
+    // Show search container when data is loaded
+    if (globalData?.commits?.length > 0) {
+        searchContainer.classList.remove('hidden');
+    }
+    
+    // Cache commit elements
+    cacheCommitElements();
+    
+    // Search input handler
+    searchInput.addEventListener('input', function(e) {
+        searchQuery = e.target.value.trim();
+        
+        // Show/hide clear button
+        if (searchQuery) {
+            searchClearBtn.classList.add('visible');
+        } else {
+            searchClearBtn.classList.remove('visible');
+        }
+        
+        performSearch(searchQuery);
+    });
+    
+    // Clear button handler
+    searchClearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchQuery = '';
+        searchClearBtn.classList.remove('visible');
+        performSearch('');
+    });
+    
+    // Enter key handler
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch(searchQuery);
+        }
+    });
+}
+
+function cacheCommitElements() {
+    allCommitElements = Array.from(document.querySelectorAll('.commit-item'));
+}
+
+function performSearch(query) {
+    const searchInfo = document.getElementById('search-info');
+    
+    if (!query) {
+        // Show all commits
+        allCommitElements.forEach(el => {
+            el.classList.remove('search-hidden');
+            removeHighlights(el);
+        });
+        
+        // Show all releases
+        document.querySelectorAll('.release-section').forEach(el => {
+            el.classList.remove('search-hidden');
+        });
+        
+        searchInfo.textContent = '';
+        searchInfo.classList.remove('has-results');
+        return;
+    }
+    
+    const lowerQuery = query.toLowerCase();
+    let matchCount = 0;
+    
+    allCommitElements.forEach(commitEl => {
+        const commitHash = commitEl.dataset.commitHash;
+        const commit = findCommitByHash(commitHash);
+        
+        if (!commit) {
+            commitEl.classList.add('search-hidden');
+            return;
+        }
+        
+        // Search in multiple fields
+        const searchableText = [
+            commit.message || '',
+            commit.message_short || '',
+            commit.author || '',
+            commit.type || '',
+            formatTimestampToDate(commit.timestamp),
+            (commit.tags || []).join(' ')
+        ].join(' ').toLowerCase();
+        
+        if (searchableText.includes(lowerQuery)) {
+            commitEl.classList.remove('search-hidden');
+            highlightMatches(commitEl, query);
+            matchCount++;
+        } else {
+            commitEl.classList.add('search-hidden');
+            removeHighlights(commitEl);
+        }
+    });
+    
+    // Handle release sections in "By Release" mode
+    if (currentViewMode === 'release') {
+        document.querySelectorAll('.release-section').forEach(releaseEl => {
+            const visibleCommits = releaseEl.querySelectorAll('.commit-item:not(.search-hidden)');
+            if (visibleCommits.length === 0) {
+                releaseEl.classList.add('search-hidden');
+            } else {
+                releaseEl.classList.remove('search-hidden');
+            }
+        });
+    }
+    
+    // Update search info
+    if (matchCount === 0) {
+        searchInfo.textContent = 'No commits found';
+        searchInfo.classList.remove('has-results');
+    } else {
+        searchInfo.textContent = `Found ${matchCount} commit${matchCount === 1 ? '' : 's'}`;
+        searchInfo.classList.add('has-results');
+    }
+}
+
+function findCommitByHash(hash) {
+    if (!globalData?.commits) return null;
+    return globalData.commits.find(c => c.hash === hash);
+}
+
+function highlightMatches(element, query) {
+    if (!query) return;
+    
+    const lowerQuery = query.toLowerCase();
+    const textNodes = getTextNodes(element);
+    
+    textNodes.forEach(node => {
+        const text = node.textContent;
+        const lowerText = text.toLowerCase();
+        const index = lowerText.indexOf(lowerQuery);
+        
+        if (index !== -1) {
+            const before = text.substring(0, index);
+            const match = text.substring(index, index + query.length);
+            const after = text.substring(index + query.length);
+            
+            const span = document.createElement('span');
+            span.innerHTML = escapeHtml(before) + 
+                           `<span class="search-highlight">${escapeHtml(match)}</span>` + 
+                           escapeHtml(after);
+            
+            node.parentNode.replaceChild(span, node);
+        }
+    });
+}
+
+function removeHighlights(element) {
+    const highlights = element.querySelectorAll('.search-highlight');
+    highlights.forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.replaceWith(document.createTextNode(parent.textContent));
+    });
+}
+
+function getTextNodes(element) {
+    const textNodes = [];
+    const walk = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: function(node) {
+                // Skip script and style elements
+                const parent = node.parentElement;
+                if (parent && (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE')) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                // Only accept text nodes with non-whitespace content
+                if (node.textContent.trim().length > 0) {
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_REJECT;
+            }
+        }
+    );
+    
+    let node;
+    while (node = walk.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    return textNodes;
+}
+
+(async () => {
+    await loadReleaseNotes();
+})();

@@ -7,6 +7,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 📋 **Dual View Modes**: View commits individually or aggregated by release tags
 - 🏷️ **Virtual "Incoming" Release**: Automatically groups unreleased commits
 - 🎨 **Interactive Timeline**: Visual representation of commits with zoom capabilities
+- 🔎 **Client-side Search**: Search by title, message content, author, type, release tag, and date
 - 🔍 **Smart Filtering**: Filter by commit type (features, fixes, docs, chores)
 - 📊 **Statistics Dashboard**: Summary cards showing commit counts by category
 - 🚀 **Auto-classification**: Automatically categorizes commits using conventional commit standards
@@ -14,6 +15,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
 - 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in markdown output
+
 
 ## Description
 
@@ -188,6 +190,7 @@ For CI/CD pipelines, add these steps to your workflow:
 - Click on **summary cards** to filter by commit type (features, fixes, docs, etc.)
 - Click on **timeline dots** to jump to specific commits
 - Use the **release dropdown** to view specific releases
+- Use the **search box** (below the timeline) to filter commits by title, content, author, type, release tag, or date
 
 ### Release Tags
 
