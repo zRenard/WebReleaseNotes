@@ -1,12 +1,97 @@
 {
-  "generated_at": "2026-01-28 16:43:21",
-  "generated_at_iso": "2026-01-28T16:43:21.993773",
+  "generated_at": "2026-02-04 18:29:29",
+  "generated_at_iso": "2026-02-04T18:29:29.669265",
   "repository": {
     "name": "WebReleaseNotes",
     "branch": "main",
     "url": "https://github.com/zRenard/WebReleaseNotes"
   },
   "commits": [
+    {
+      "hash": "8c629b3c780f17888d50a9f56c133aaf8a6bf5a0",
+      "short_hash": "8c629b3",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1770221115,
+      "message": "Add badges with releases numbers and specific one for incomming release\r\nFix an issues with dates of commits",
+      "message_short": "Add badges with releases numbers and specific one for incomming release\r",
+      "type": "feat",
+      "files_changed": 3,
+      "insertions": 87,
+      "deletions": 5
+    },
+    {
+      "hash": "d71ab00a2c38c27867412b1a5d78e632fa5aa703",
+      "short_hash": "d71ab00",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1770137339,
+      "message": "fix css lint errors",
+      "message_short": "fix css lint errors",
+      "type": "fix",
+      "files_changed": 1,
+      "insertions": 2,
+      "deletions": 1,
+      "tags": [
+        "v1.2.0",
+        "v1.2.1"
+      ]
+    },
+    {
+      "hash": "f0485d9618842fa342501a897d12878927ba0871",
+      "short_hash": "f0485d9",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1770135804,
+      "message": "Add search",
+      "message_short": "Add search",
+      "type": "feat",
+      "files_changed": 4,
+      "insertions": 334,
+      "deletions": 18
+    },
+    {
+      "hash": "42563c679c1c1915f523f7391d8a6cca0c7d4a0a",
+      "short_hash": "42563c6",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1769694631,
+      "message": "Feat. Add Timeline in md file\r\nFix. Parameters names for md generation only\r\nDoc. Add sample md files",
+      "message_short": "Feat. Add Timeline in md file\r",
+      "type": "feat",
+      "files_changed": 4,
+      "insertions": 545,
+      "deletions": 10
+    },
+    {
+      "hash": "c7561719f698c703f8ff8bb38274634d6f909cbe",
+      "short_hash": "c756171",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1769681344,
+      "message": "feat. Add iption to get only lastest version in markdown\r\nfeat. Add default markdown",
+      "message_short": "feat. Add iption to get only lastest version in markdown\r",
+      "type": "feat",
+      "files_changed": 2,
+      "insertions": 21,
+      "deletions": 6
+    },
+    {
+      "hash": "ccda61aac0ee3960b6f9f28412ee753b948ad34c",
+      "short_hash": "ccda61a",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1769615248,
+      "message": "Feat. Add new catgories for commit\r\nFeat. Add download markdown\r\nTest. Add Sample json files\r\nRefactor. Dates handling in python script",
+      "message_short": "Feat. Add new catgories for commit\r",
+      "type": "feat",
+      "files_changed": 8,
+      "insertions": 937,
+      "deletions": 751,
+      "tags": [
+        "v1.1.0"
+      ]
+    },
     {
       "hash": "2b0c69c9589b57fdffadecd3eac7234fc4d233e2",
       "short_hash": "2b0c69c",

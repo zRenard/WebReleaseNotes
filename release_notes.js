@@ -179,8 +179,8 @@ function parseReleases(commits) {
         releasesList.push({
             tag: currentGroup.tags.join(' / '), // Merge multiple tags on same commit
             commits: releaseCommits,
-            startDate: releaseCommits[0]?.date,
-            endDate: releaseCommits[releaseCommits.length - 1]?.date,
+            startDate: formatTimestampToDate(releaseCommits[0]?.timestamp),
+            endDate: formatTimestampToDate(releaseCommits[releaseCommits.length - 1]?.timestamp),
             commitCount: releaseCommits.length
         });
     }
