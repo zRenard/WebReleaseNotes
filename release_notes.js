@@ -23,6 +23,17 @@ function formatTimestampToDate(timestamp) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+// Helper function to check if a tag is a stable release (no prerelease segment)
+// Excludes tags with prerelease markers like -alpha, -beta, -rc, etc.
+function isReleaseVersionTag(tag) {
+    if (tag.includes('-')) {
+        return false;
+    }
+    // (?:\+[vV]+)?
+    const releasePattern = /^[vV]?\d+\.\d+\.\d+(?:\+[a-zA-Z0-9.-]+)?$/;
+    return releasePattern.test(tag);
+}
+
 let currentViewMode = 'commit'; // 'commit' or 'release'
 let globalData = null; // Store data globally for mode switching
 let releases = []; // Store aggregated releases
@@ -40,7 +51,30 @@ async function loadReleaseNotes() {
         
         // Parse releases from tags
         releases = parseReleases(data.commits);
+
+        // Update release count badges
+        const incomingBadge = document.getElementById('incoming-badge');
+        const realReleaseBadge = document.getElementById('real-release-badge');
+        const incomingCount = releases.filter(r => r.isVirtual).length;
+        const realReleaseCount = releases.filter(r => !r.isVirtual).length;
         
+        if (incomingBadge) {
+            incomingBadge.textContent = incomingCount;
+            if (incomingCount > 0) {
+                incomingBadge.classList.remove('badge-hidden');
+            } else {
+                incomingBadge.classList.add('badge-hidden');
+            }
+        }
+        if (realReleaseBadge) {
+            realReleaseBadge.textContent = realReleaseCount;
+            if (realReleaseCount > 0) {
+                realReleaseBadge.classList.remove('badge-hidden');
+            } else {
+                realReleaseBadge.classList.add('badge-hidden');
+            }
+        }
+
         // Show view controls only if there are tags/releases
         if (viewControls) {
             if (releases.length > 0) {
@@ -97,15 +131,15 @@ function parseReleases(commits) {
         if (commit.tags && commit.tags.length > 0) {
             commit.tags.forEach(tag => {
                 if (!(tag in tagFirstIndex)) {
-                    tagFirstIndex[tag] = index;
+                      tagFirstIndex[tag] = index;
                 }
             });
         }
     });
     
-    // Filter to only include release tags (starting with 'v' or 'V')
+    // Filter to only include stable release tags (SemVer without prerelease optionnaly star with 'v' or 'V')
     const releaseTags = Object.keys(tagFirstIndex).filter(tag => 
-        tag.startsWith('v') || tag.startsWith('V')
+        isReleaseVersionTag(tag)
     );
     
     // Get unique commit indices where release tags appear (in order)
@@ -127,8 +161,8 @@ function parseReleases(commits) {
         releasesList.push({
             tag: 'Incoming',
             commits: incomingCommits,
-            startDate: incomingCommits[0]?.date,
-            endDate: incomingCommits[incomingCommits.length - 1]?.date,
+            startDate: incomingCommits[0] ? formatTimestampToDate(incomingCommits[0].timestamp) : 'Unknown',
+            endDate: incomingCommits[incomingCommits.length - 1] ? formatTimestampToDate(incomingCommits[incomingCommits.length - 1].timestamp) : 'Unknown',
             commitCount: incomingCommits.length,
             isVirtual: true
         });
@@ -225,6 +259,7 @@ function populateReleaseDropdown() {
         const option = document.createElement('option');
         option.value = release.tag;
         option.textContent = `${release.tag} (${release.commitCount} commits)`;
+        option.classList.add(release.isVirtual ? 'option-incoming' : 'option-real');
         dropdown.appendChild(option);
     });
 }
