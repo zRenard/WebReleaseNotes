@@ -1,6 +1,6 @@
 # Release Notes - WebReleaseNotes
 
-**Generated:** 2026-01-28 16:41:27
+**Generated:** 2026-02-04 18:29:29
 **Branch:** main
 **Repository:** https://github.com/zRenard/WebReleaseNotes
 
@@ -8,11 +8,54 @@
 
 ## 🚀 Incoming
 
-**Commits:** 2 | **Period:** 2026-01-28 15:22:57 to 2026-01-27 18:36:08
+**Commits:** 1 | **Period:** 2026-02-04 17:05:15 to 2026-02-04 17:05:15
 
-**Summary:** ✨ Features: 1 | 🐛 Bug Fixes: 1
+**Summary:** ✨ Features: 1
 
 ### ✨ Features
+
+- Add badges with releases numbers and specific one for incomming release ([`8c629b3`](https://github.com/zRenard/WebReleaseNotes/commit/8c629b3c780f17888d50a9f56c133aaf8a6bf5a0)) - *zRenard* - 2026-02-04 17:05:15
+  - 📊 3 files, +87/-5 lines
+
+
+---
+
+## 🏷️ v1.2.0 / v1.2.1
+
+**Commits:** 4 | **Period:** 2026-02-03 17:48:59 to 2026-01-29 11:09:04
+
+**Summary:** ✨ Features: 3 | 🐛 Bug Fixes: 1
+
+### ✨ Features
+
+- Add search ([`f0485d9`](https://github.com/zRenard/WebReleaseNotes/commit/f0485d9618842fa342501a897d12878927ba0871)) - *zRenard* - 2026-02-03 17:23:24
+  - 📊 4 files, +334/-18 lines
+
+- Feat. Add Timeline in md file ([`42563c6`](https://github.com/zRenard/WebReleaseNotes/commit/42563c679c1c1915f523f7391d8a6cca0c7d4a0a)) - *zRenard* - 2026-01-29 14:50:31
+  - 📊 4 files, +545/-10 lines
+
+- feat. Add iption to get only lastest version in markdown ([`c756171`](https://github.com/zRenard/WebReleaseNotes/commit/c7561719f698c703f8ff8bb38274634d6f909cbe)) - *zRenard* - 2026-01-29 11:09:04
+  - 📊 2 files, +21/-6 lines
+
+
+### 🐛 Bug Fixes
+
+- fix css lint errors ([`d71ab00`](https://github.com/zRenard/WebReleaseNotes/commit/d71ab00a2c38c27867412b1a5d78e632fa5aa703)) - *zRenard* - 2026-02-03 17:48:59
+  - 📊 1 files, +2/-1 lines
+
+
+---
+
+## 🏷️ v1.1.0
+
+**Commits:** 3 | **Period:** 2026-01-28 16:47:28 to 2026-01-27 18:36:08
+
+**Summary:** ✨ Features: 2 | 🐛 Bug Fixes: 1
+
+### ✨ Features
+
+- Feat. Add new catgories for commit ([`ccda61a`](https://github.com/zRenard/WebReleaseNotes/commit/ccda61aac0ee3960b6f9f28412ee753b948ad34c)) - *zRenard* - 2026-01-28 16:47:28
+  - 📊 8 files, +937/-751 lines
 
 - feat. Add option to generate markdown format ([`2b0c69c`](https://github.com/zRenard/WebReleaseNotes/commit/2b0c69c9589b57fdffadecd3eac7234fc4d233e2)) - *zRenard* - 2026-01-28 15:22:57
   - 📊 2 files, +361/-7 lines
@@ -34,8 +77,7 @@
 
 ### ✨ Features
 
-- feat: Handle incomming release
- ([`857e904`](https://github.com/zRenard/WebReleaseNotes/commit/857e904c8a0771ddf9dac2e7f7e02a94ac7316d4)) - *zRenard* - 2026-01-27 14:42:39
+- feat: Handle incomming release ([`857e904`](https://github.com/zRenard/WebReleaseNotes/commit/857e904c8a0771ddf9dac2e7f7e02a94ac7316d4)) - *zRenard* - 2026-01-27 14:42:39
   - 📊 7 files, +1813/-17 lines
 
 - Add custom funding link to FUNDING.yml ([`b72e4ce`](https://github.com/zRenard/WebReleaseNotes/commit/b72e4cec5e53a251ae63863bad0447a19d67937d)) - *zRenard* - 2026-01-27 11:58:00
@@ -67,8 +109,8 @@
 
 ## 📈 Overall Summary
 
-- **Total Releases:** 2
-- **Total Commits:** 9
-- **Files Changed:** 27
-- **Insertions:** +5936
-- **Deletions:** -35
+- **Total Releases:** 4
+- **Total Commits:** 15
+- **Files Changed:** 49
+- **Insertions:** +7862
+- **Deletions:** -826
