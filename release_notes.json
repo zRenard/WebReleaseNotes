@@ -1,12 +1,54 @@
 {
-  "generated_at": "2026-02-04 18:29:29",
-  "generated_at_iso": "2026-02-04T18:29:29.669265",
+  "generated_at": "2026-02-04 19:48:59",
+  "generated_at_iso": "2026-02-04T19:48:59.868265",
   "repository": {
     "name": "WebReleaseNotes",
     "branch": "main",
     "url": "https://github.com/zRenard/WebReleaseNotes"
   },
   "commits": [
+    {
+      "hash": "a127979e682ae68a5e0f689b0334183fb58bc904",
+      "short_hash": "a127979",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1770230751,
+      "message": "fix l'highlight de la recherche etait pareil et cassé la structure HTML",
+      "message_short": "fix l'highlight de la recherche etait pareil et cassé la structure HTML",
+      "type": "fix",
+      "files_changed": 3,
+      "insertions": 125,
+      "deletions": 46
+    },
+    {
+      "hash": "66b65e84feeee75eddeee1cbee67ca0d879e151e",
+      "short_hash": "66b65e8",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1770227275,
+      "message": "Fix Update gitignore and push updated markdown example",
+      "message_short": "Fix Update gitignore and push updated markdown example",
+      "type": "fix",
+      "files_changed": 2,
+      "insertions": 53,
+      "deletions": 10
+    },
+    {
+      "hash": "db7bbb6d6bfc2039601c8f38253674026169d889",
+      "short_hash": "db7bbb6",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1770227030,
+      "message": "fix dates issues in classic releases",
+      "message_short": "fix dates issues in classic releases",
+      "type": "fix",
+      "files_changed": 2,
+      "insertions": 89,
+      "deletions": 4,
+      "tags": [
+        "v1.3.0"
+      ]
+    },
     {
       "hash": "8c629b3c780f17888d50a9f56c133aaf8a6bf5a0",
       "short_hash": "8c629b3",

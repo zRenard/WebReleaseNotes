@@ -1,6 +1,6 @@
 # Release Notes - WebReleaseNotes
 
-**Generated:** 2026-02-04 18:49:00
+**Generated:** 2026-02-04 20:10:54
 **Branch:** main
 **Repository:** https://github.com/zRenard/WebReleaseNotes
 
@@ -8,11 +8,14 @@
 
 ## 🚀 Incoming
 
-**Commits:** 1 | **Period:** 2026-02-04 18:47:55 to 2026-02-04 18:47:55
+**Commits:** 2 | **Period:** 2026-02-04 19:45:51 to 2026-02-04 18:47:55
 
-**Summary:** 🐛 Bug Fixes: 1
+**Summary:** 🐛 Bug Fixes: 2
 
 ### 🐛 Bug Fixes
+
+- fix l'highlight de la recherche etait pareil et cassé la structure HTML ([`a127979`](https://github.com/zRenard/WebReleaseNotes/commit/a127979e682ae68a5e0f689b0334183fb58bc904)) - *zRenard* - 2026-02-04 19:45:51
+  - 📊 3 files, +125/-46 lines
 
 - Fix Update gitignore and push updated markdown example ([`66b65e8`](https://github.com/zRenard/WebReleaseNotes/commit/66b65e84feeee75eddeee1cbee67ca0d879e151e)) - *zRenard* - 2026-02-04 18:47:55
   - 📊 2 files, +53/-10 lines
@@ -91,9 +94,9 @@
 
 ## 🏷️ v1.0.0
 
-**Commits:** 5 | **Period:** 2026-01-27 15:27:08 to 2026-01-27 00:18:24
+**Commits:** 4 | **Period:** 2026-01-27 15:27:08 to 2026-01-27 11:58:00
 
-**Summary:** ✨ Features: 3 | 🐛 Bug Fixes: 2
+**Summary:** ✨ Features: 2 | 🐛 Bug Fixes: 2
 
 ### ✨ Features
 
@@ -102,9 +105,6 @@
 
 - Add custom funding link to FUNDING.yml ([`b72e4ce`](https://github.com/zRenard/WebReleaseNotes/commit/b72e4cec5e53a251ae63863bad0447a19d67937d)) - *zRenard* - 2026-01-27 11:58:00
   - 📊 1 files, +1/-0 lines
-
-- feat: add local checker and minification ([`9256a7f`](https://github.com/zRenard/WebReleaseNotes/commit/9256a7f72038581b4ada95f1449a5621ac9a608d)) - *zRenard* - 2026-01-27 00:18:24
-  - 📊 5 files, +111/-7 lines
 
 
 ### 🐛 Bug Fixes
@@ -122,6 +122,6 @@
 
 - **Total Releases:** 5
 - **Total Commits:** 15
-- **Files Changed:** 45
-- **Insertions:** +4451
-- **Deletions:** -840
+- **Files Changed:** 43
+- **Insertions:** +4465
+- **Deletions:** -879

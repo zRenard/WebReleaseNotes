@@ -988,7 +988,7 @@ function highlightMatches(commitEl, query) {
                 if (text.length === 0) continue;
                 // Ne pas toucher aux textes qui sont à l'intérieur de la balise de footer/header
                 // (nous ciblons seulement les nœuds texte directs, typiquement le résumé)
-                const regex = new RegExp(query.replace(/[.*+?^${}()|[\\]\\]/g, '\\\$&'), 'gi');
+                const regex = new RegExp(query.replaceAll(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'gi');
                 const matches = [...child.textContent.matchAll(regex)];
                 if (matches.length > 0) {
                     const frag = document.createDocumentFragment();
