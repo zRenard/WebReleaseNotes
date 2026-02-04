@@ -1,6 +1,6 @@
 # Release Notes - WebReleaseNotes
 
-**Generated:** 2026-02-04 18:29:29
+**Generated:** 2026-02-04 18:49:00
 **Branch:** main
 **Repository:** https://github.com/zRenard/WebReleaseNotes
 
@@ -8,14 +8,34 @@
 
 ## 🚀 Incoming
 
-**Commits:** 1 | **Period:** 2026-02-04 17:05:15 to 2026-02-04 17:05:15
+**Commits:** 1 | **Period:** 2026-02-04 18:47:55 to 2026-02-04 18:47:55
 
-**Summary:** ✨ Features: 1
+**Summary:** 🐛 Bug Fixes: 1
+
+### 🐛 Bug Fixes
+
+- Fix Update gitignore and push updated markdown example ([`66b65e8`](https://github.com/zRenard/WebReleaseNotes/commit/66b65e84feeee75eddeee1cbee67ca0d879e151e)) - *zRenard* - 2026-02-04 18:47:55
+  - 📊 2 files, +53/-10 lines
+
+
+---
+
+## 🏷️ v1.3.0
+
+**Commits:** 2 | **Period:** 2026-02-04 18:43:50 to 2026-02-04 17:05:15
+
+**Summary:** ✨ Features: 1 | 🐛 Bug Fixes: 1
 
 ### ✨ Features
 
 - Add badges with releases numbers and specific one for incomming release ([`8c629b3`](https://github.com/zRenard/WebReleaseNotes/commit/8c629b3c780f17888d50a9f56c133aaf8a6bf5a0)) - *zRenard* - 2026-02-04 17:05:15
   - 📊 3 files, +87/-5 lines
+
+
+### 🐛 Bug Fixes
+
+- fix dates issues in classic releases ([`db7bbb6`](https://github.com/zRenard/WebReleaseNotes/commit/db7bbb6d6bfc2039601c8f38253674026169d889)) - *zRenard* - 2026-02-04 18:43:50
+  - 📊 2 files, +89/-4 lines
 
 
 ---
@@ -71,9 +91,9 @@
 
 ## 🏷️ v1.0.0
 
-**Commits:** 7 | **Period:** 2026-01-27 15:27:08 to 2026-01-26 18:44:47
+**Commits:** 5 | **Period:** 2026-01-27 15:27:08 to 2026-01-27 00:18:24
 
-**Summary:** ✨ Features: 4 | 🐛 Bug Fixes: 2 | 📌 Other Changes: 1
+**Summary:** ✨ Features: 3 | 🐛 Bug Fixes: 2
 
 ### ✨ Features
 
@@ -86,9 +106,6 @@
 - feat: add local checker and minification ([`9256a7f`](https://github.com/zRenard/WebReleaseNotes/commit/9256a7f72038581b4ada95f1449a5621ac9a608d)) - *zRenard* - 2026-01-27 00:18:24
   - 📊 5 files, +111/-7 lines
 
-- feat: add release notes exporter script ([`7390e79`](https://github.com/zRenard/WebReleaseNotes/commit/7390e79dc28ba9baf31131241360372d837363fa)) - *zRenard* - 2026-01-26 23:51:47
-  - 📊 6 files, +3114/-0 lines
-
 
 ### 🐛 Bug Fixes
 
@@ -99,18 +116,12 @@
   - 📊 2 files, +63/-1 lines
 
 
-### 📌 Other Changes
-
-- Initial commit ([`d9a1e78`](https://github.com/zRenard/WebReleaseNotes/commit/d9a1e78072d33f5fef9400b9dc4de1d1fe895b66)) - *zRenard* - 2026-01-26 18:44:47
-  - 📊 2 files, +439/-0 lines
-
-
 ---
 
 ## 📈 Overall Summary
 
-- **Total Releases:** 4
+- **Total Releases:** 5
 - **Total Commits:** 15
-- **Files Changed:** 49
-- **Insertions:** +7862
-- **Deletions:** -826
+- **Files Changed:** 45
+- **Insertions:** +4451
+- **Deletions:** -840

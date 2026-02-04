@@ -916,12 +916,10 @@ function performSearch(query) {
     allCommitElements.forEach(commitEl => {
         const commitHash = commitEl.dataset.commitHash;
         const commit = findCommitByHash(commitHash);
-        
         if (!commit) {
             commitEl.classList.add('search-hidden');
             return;
         }
-        
         // Search in multiple fields
         const searchableText = [
             commit.message || '',
@@ -931,7 +929,6 @@ function performSearch(query) {
             formatTimestampToDate(commit.timestamp),
             (commit.tags || []).join(' ')
         ].join(' ').toLowerCase();
-        
         if (searchableText.includes(lowerQuery)) {
             commitEl.classList.remove('search-hidden');
             highlightMatches(commitEl, query);
@@ -969,38 +966,108 @@ function findCommitByHash(hash) {
     return globalData.commits.find(c => c.hash === hash);
 }
 
-function highlightMatches(element, query) {
+function highlightMatches(commitEl, query) {
     if (!query) return;
-    
-    const lowerQuery = query.toLowerCase();
-    const textNodes = getTextNodes(element);
-    
-    textNodes.forEach(node => {
-        const text = node.textContent;
-        const lowerText = text.toLowerCase();
-        const index = lowerText.indexOf(lowerQuery);
-        
-        if (index !== -1) {
-            const before = text.substring(0, index);
-            const match = text.substring(index, index + query.length);
-            const after = text.substring(index + query.length);
-            
-            const span = document.createElement('span');
-            span.innerHTML = escapeHtml(before) + 
-                           `<span class="search-highlight">${escapeHtml(match)}</span>` + 
-                           escapeHtml(after);
-            
-            node.parentNode.replaceChild(span, node);
+    const selectors = ['.commit-summary', '.commit-message', '.commit-author', '.commit-type', '.commit-tag'];
+    let found = 0;
+    selectors.forEach(sel => {
+        const el = commitEl.querySelector(sel);
+        if (el) {
+            found++;
+            removeHighlights(el);
+            highlightTextNodes(el, query);
         }
     });
+
+    // Si aucun des sous-éléments n'existe (p.ex. le résumé est un noeud texte direct),
+    // surligner uniquement dans les nœuds texte directs de l'élément commit (sécurisé).
+    if (found === 0) {
+        for (let child = commitEl.firstChild; child; child = child.nextSibling) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const text = child.textContent.trim();
+                if (text.length === 0) continue;
+                // Ne pas toucher aux textes qui sont à l'intérieur de la balise de footer/header
+                // (nous ciblons seulement les nœuds texte directs, typiquement le résumé)
+                const regex = new RegExp(query.replace(/[.*+?^${}()|[\\]\\]/g, '\\\$&'), 'gi');
+                const matches = [...child.textContent.matchAll(regex)];
+                if (matches.length > 0) {
+                    const frag = document.createDocumentFragment();
+                    let lastIndex = 0;
+                    matches.forEach(match => {
+                        const before = child.textContent.slice(lastIndex, match.index);
+                        if (before) frag.appendChild(document.createTextNode(before));
+                        const highlight = document.createElement('span');
+                        highlight.className = 'search-highlight';
+                        highlight.textContent = match[0];
+                        frag.appendChild(highlight);
+                        lastIndex = match.index + match[0].length;
+                    });
+                    const after = child.textContent.slice(lastIndex);
+                    if (after) frag.appendChild(document.createTextNode(after));
+                    child.parentNode.replaceChild(frag, child);
+                }
+            }
+        }
+        // Aussi tenter d'attraper le message complet dans commit-body si présent
+        const bodyMsg = commitEl.querySelector('.commit-body .commit-message');
+        if (bodyMsg) {
+            removeHighlights(bodyMsg);
+            highlightTextNodes(bodyMsg, query);
+        }
+    }
+}
+
+// Fonction récursive pour surligner dans les nœuds texte uniquement
+function highlightTextNodes(node, query) {
+    if (!query) return;
+    const regex = new RegExp(query.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    for (let child = node.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType === Node.TEXT_NODE) {
+            const text = child.textContent;
+            const matches = [...text.matchAll(regex)];
+            if (matches.length > 0) {
+                const frag = document.createDocumentFragment();
+                let lastIndex = 0;
+                matches.forEach(match => {
+                    const before = text.slice(lastIndex, match.index);
+                    if (before) frag.appendChild(document.createTextNode(before));
+                    const highlight = document.createElement('span');
+                    highlight.className = 'search-highlight';
+                    highlight.textContent = match[0];
+                    frag.appendChild(highlight);
+                    lastIndex = match.index + match[0].length;
+                });
+                const after = text.slice(lastIndex);
+                if (after) frag.appendChild(document.createTextNode(after));
+                child.replaceWith(frag);
+            }
+        } else if (child.nodeType === Node.ELEMENT_NODE && !child.classList.contains('search-highlight')) {
+            highlightTextNodes(child, query);
+        }
+    }
+}
+
+function highlightText(text, query) {
+    if (!query) return escapeHtml(text);
+    const regex = new RegExp(query.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+    return escapeHtml(text).replace(regex, match => `<span class="search-highlight">${escapeHtml(match)}</span>`);
 }
 
 function removeHighlights(element) {
-    const highlights = element.querySelectorAll('.search-highlight');
-    highlights.forEach(highlight => {
-        const parent = highlight.parentNode;
-        parent.replaceWith(document.createTextNode(parent.textContent));
+    const highlights = Array.from(element.querySelectorAll('.search-highlight'));
+    highlights.forEach(span => {
+        // Remplacer chaque <span class="search-highlight">...</span> par son texte
+        const textNode = document.createTextNode(span.textContent);
+        if (span.parentNode) {
+            span.parentNode.replaceChild(textNode, span);
+        }
     });
+    // Fusionner les nœuds texte adjacents restaurés
+    try {
+        element.normalize();
+    } catch (e) {
+        // ignore si element n'est pas un Node ou autre erreur
+    }
 }
 
 function getTextNodes(element) {

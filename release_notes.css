@@ -1483,6 +1483,7 @@ h1 {
 /* Highlight matching text */
 .search-highlight {
     background-color: #03d697;
+    color: rgb(7, 73, 37);
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: 600;
