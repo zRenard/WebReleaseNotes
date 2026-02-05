@@ -521,6 +521,14 @@ h1 {
     color: #57606a;
 }
 
+.timeline-interval-legend {
+    font-size: 0.7em;
+    font-weight: 500;
+    text-transform: none;
+    color: #8b949e;
+    margin-left: 6px;
+}
+
 .timeline-track-container {
     overflow: auto hidden;
     padding-left: 10px;
@@ -598,7 +606,6 @@ h1 {
 
 .timeline-graduation {
     position: absolute;
-    left: 0;
     transform: translateX(-50%);
     top: 0;
     bottom: 0;
@@ -609,10 +616,10 @@ h1 {
 }
 
 .graduation-tick {
-    width: 1px;
-    height: 8px;
+    width: 2px;
+    height: 10px;
     background: #666;
-    position: absolute;
+    position: relative;
     top: 0;
 }
 
@@ -699,8 +706,8 @@ h1 {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%) rotate(45deg);
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     background: #2c5282;
     border: 1px solid white;
     cursor: pointer;
@@ -710,7 +717,6 @@ h1 {
 }
 
 .timeline-tag::before {
-    content: '🏷';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -1775,6 +1781,10 @@ body.theme-dark .commit-timeline {
 
 body.theme-dark .timeline-label {
     color: #9aa4b2;
+}
+
+body.theme-dark .timeline-interval-legend {
+    color: #6b7280;
 }
 
 body.theme-dark .timeline-track {

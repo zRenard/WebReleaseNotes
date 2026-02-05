@@ -550,20 +550,103 @@ function buildTimeline(commits) {
         return `<div class="timeline-commit type-${typeKey} ${leftClass}" title="${title.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
     }).join('');
     
-    // Build graduation marks (10 marks across the timeline, left = oldest, right = newest)
+    // Determine appropriate tick interval based on timeframe
+    const timeRangeSeconds = timeRange;
+    const timeRangeDays = timeRangeSeconds / 86400;
+    const timeRangeHours = timeRangeSeconds / 3600;
+    
+    let tickInterval, formatOptions, useTimeFormat = false, intervalLabel;
+    
+    if (timeRangeDays > 365) {
+        // Spanning multiple years - use month ticks
+        tickInterval = 30 * 86400; // ~1 month in seconds
+        formatOptions = { month: 'short', year: 'numeric' };
+        intervalLabel = 'Monthly';
+    } else if (timeRangeDays > 60) {
+        // 2+ months - use month ticks
+        tickInterval = 30 * 86400;
+        formatOptions = { month: 'short', day: 'numeric' };
+        intervalLabel = 'Monthly';
+    } else if (timeRangeDays > 7) {
+        // 1 week to 2 months - use week ticks
+        tickInterval = 7 * 86400;
+        formatOptions = { month: 'short', day: 'numeric' };
+        intervalLabel = 'Weekly';
+    } else if (timeRangeDays > 1) {
+        // Multiple days - use day ticks
+        tickInterval = 86400;
+        formatOptions = { month: 'short', day: 'numeric' };
+        intervalLabel = 'Daily';
+    } else if (timeRangeHours > 1) {
+        // Same day but multiple hours - use hour ticks
+        tickInterval = 3600;
+        formatOptions = { hour: 'numeric', minute: '2-digit' };
+        useTimeFormat = true;
+        intervalLabel = 'Hourly';
+    } else {
+        // Less than an hour - use 10-minute ticks
+        tickInterval = 600;
+        formatOptions = { hour: 'numeric', minute: '2-digit' };
+        useTimeFormat = true;
+        intervalLabel = '10-Minute Intervals';
+    }
+    
+    // Build graduation marks - generate ticks from start to end
     const graduations = [];
-    for (let i = 0; i <= 10; i++) {
-        const position = (i / 10) * 100;
+    let currentTimestamp = oldestTime;
+    let tickIndex = 0;
+    const maxTicks = 12;
+    
+    // Add first tick
+    let dateLabel;
+    if (useTimeFormat) {
+        dateLabel = new Date(currentTimestamp * 1000).toLocaleTimeString('en-US', formatOptions);
+    } else {
+        dateLabel = new Date(currentTimestamp * 1000).toLocaleDateString('en-US', formatOptions);
+    }
+    graduations.push(`
+        <div class="timeline-graduation left-0">
+            <div class="graduation-tick"></div>
+            <div class="graduation-label">${dateLabel}</div>
+        </div>
+    `);
+    
+    // Add intermediate ticks
+    while (tickIndex < maxTicks - 1) {
+        currentTimestamp += tickInterval;
+        if (currentTimestamp >= newestTime) break;
+        
+        const position = ((currentTimestamp - oldestTime) / timeRange) * 100;
         const leftClass = 'left-' + Math.round(position);
-        const timestamp = oldestTime + (timeRange / 10) * i;
-        const date = new Date(timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        if (useTimeFormat) {
+            dateLabel = new Date(currentTimestamp * 1000).toLocaleTimeString('en-US', formatOptions);
+        } else {
+            dateLabel = new Date(currentTimestamp * 1000).toLocaleDateString('en-US', formatOptions);
+        }
+        
         graduations.push(`
             <div class="timeline-graduation ${leftClass}">
                 <div class="graduation-tick"></div>
-                <div class="graduation-label">${date}</div>
+                <div class="graduation-label">${dateLabel}</div>
             </div>
         `);
+        tickIndex++;
     }
+    
+    // Always add last tick at the end
+    if (useTimeFormat) {
+        dateLabel = new Date(newestTime * 1000).toLocaleTimeString('en-US', formatOptions);
+    } else {
+        dateLabel = new Date(newestTime * 1000).toLocaleDateString('en-US', formatOptions);
+    }
+    graduations.push(`
+        <div class="timeline-graduation left-100">
+            <div class="graduation-tick"></div>
+            <div class="graduation-label">${dateLabel}</div>
+        </div>
+    `);
+    
     const graduationHTML = graduations.join('');
     
     // Format dates (left = oldest, right = newest)
@@ -572,7 +655,7 @@ function buildTimeline(commits) {
     
     const timelineHTML = `
         <div class="commit-timeline">
-            <div class="timeline-label">Commit Timeline</div>
+            <div class="timeline-label">Commit Timeline <span class="timeline-interval-legend">(${intervalLabel})</span></div>
             <div class="timeline-track-container">
                 <div class="timeline-track" id="timeline-track">
                     <div class="timeline-graduations">
