@@ -1156,6 +1156,39 @@ h1 {
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.release-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.75em;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.release-badge.badge-hidden {
+    display: none;
+}
+
+.release-badge.incoming {
+    background: #ff6b6b;
+}
+
+.release-badge.real {
+    background: #51cf66;
+}
+
+.mode-btn.active .release-badge.incoming {
+    background: #ff8787;
+}
+
+.mode-btn.active .release-badge.real {
+    background: #69db7c;
+}
+
 .release-selector {
     display: flex;
     align-items: center;
@@ -1191,7 +1224,6 @@ h1 {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Release View Styles */
 .release-selector select option {
     padding: 8px 12px;
 }
@@ -1483,41 +1515,281 @@ h1 {
 /* Highlight matching text */
 .search-highlight {
     background-color: #03d697;
-    color: rgb(7, 73, 37);
     padding: 2px 4px;
     border-radius: 3px;
     font-weight: 600;
 }
 
-.release-badge {
-    display: inline-flex;
+.header-actions {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    color: white;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    font-size: 0.75em;
-    font-weight: 700;
-    margin-left: 4px;
+    gap: 10px;
 }
 
-.release-badge.badge-hidden {
-    display: none;
+.theme-toggle {
+    padding: 8px 14px;
+    border: 2px solid #e1e4e8;
+    background: #fff;
+    color: #24292e;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
-.release-badge.incoming {
-    background: #ff6b6b;
+.theme-toggle:hover {
+    border-color: #667eea;
+    background: #f0f5ff;
+    transform: translateY(-1px);
 }
 
-.release-badge.real {
-    background: #51cf66;
+/* Dark Theme */
+body.theme-dark {
+    background: linear-gradient(135deg, #0b0f14 0%, #1b2330 100%);
+    color: #f1f5f9;
 }
 
-.mode-btn.active .release-badge.incoming {
-    background: #ff8787;
+body.theme-dark .container {
+    background-color: #0f131a;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
-.mode-btn.active .release-badge.real {
-    background: #69db7c;
+body.theme-dark h1,
+body.theme-dark .type-title,
+body.theme-dark .commit-summary,
+body.theme-dark .commit-message,
+body.theme-dark .release-title {
+    color: #f1f5f9;
+}
+
+body.theme-dark .metadata,
+body.theme-dark .type-count,
+body.theme-dark .commit-date,
+body.theme-dark .commit-footer,
+body.theme-dark .search-info {
+    color: #cbd5e1;
+}
+
+body.theme-dark .header-info {
+    border-bottom-color: #2f3a4a;
+}
+
+body.theme-dark .view-controls {
+    background: #151b24;
+    border-color: #2a3442;
+}
+
+body.theme-dark .mode-btn,
+body.theme-dark .theme-toggle {
+    background: #0f131a;
+    color: #e6edf3;
+    border-color: #2a3442;
+}
+
+body.theme-dark .mode-btn:hover,
+body.theme-dark .theme-toggle:hover {
+    background: #1b2330;
+    border-color: #667eea;
+}
+
+body.theme-dark .release-selector label {
+    color: #e6edf3;
+}
+
+body.theme-dark .release-selector select {
+    background: #0f131a;
+    color: #e6edf3;
+    border-color: #2a3442;
+}
+
+body.theme-dark .summary-card {
+    background: #0f131a;
+    border-color: #2a3442;
+}
+
+body.theme-dark .summary-card.active {
+    background: #273244;
+    border-color: #4b5563;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+body.theme-dark .summary-card.feat.active,
+body.theme-dark .summary-card.fix.active,
+body.theme-dark .summary-card.docs.active,
+body.theme-dark .summary-card.style.active,
+body.theme-dark .summary-card.refactor.active,
+body.theme-dark .summary-card.test.active,
+body.theme-dark .summary-card.perf.active,
+body.theme-dark .summary-card.ops.active,
+body.theme-dark .summary-card.chore.active,
+body.theme-dark .summary-card.other.active,
+body.theme-dark .summary-card.tags.active {
+    background: #273244;
+}
+
+body.theme-dark .summary-card.total {
+    background: #0f131a;
+    border-color: #2a3442;
+}
+
+body.theme-dark .summary-card.total.active {
+    background: #151b24;
+    border-color: #3a475a;
+}
+
+body.theme-dark .summary-card:hover {
+    border-color: #3a475a;
+}
+
+body.theme-dark .summary-card.total .label,
+body.theme-dark .summary-card.total .label-small {
+    color: #cbd5e1;
+}
+
+body.theme-dark .summary-card.total .number {
+    color: #f8fafc;
+}
+
+body.theme-dark .summary-card.total .number-small {
+    color: #dbeafe;
+}
+
+body.theme-dark .summary-card:not(.total) .number {
+    color: #e2e8f0;
+}
+
+body.theme-dark .summary-card:not(.total) .label {
+    color: #cbd5e1;
+}
+
+body.theme-dark .commit-item {
+    background-color: #151b24;
+    border-left-color: #667eea;
+}
+
+body.theme-dark .commit-item:hover {
+    background-color: #1b2330;
+}
+
+body.theme-dark .commit-item.commit-renovate {
+    background-color: #1b1a10;
+}
+
+body.theme-dark .commit-tag {
+    background: #1b2330;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+
+body.theme-dark .commit-hash {
+    background-color: #1b2330;
+    color: #7aa2ff;
+}
+
+body.theme-dark .commit-hash:hover {
+    background-color: #3b82f6;
+}
+
+body.theme-dark .commit-footer {
+    border-top-color: #2a3442;
+}
+
+body.theme-dark .search-box #search-input {
+    background-color: #0f131a;
+    color: #e6edf3;
+    border-color: #2a3442;
+}
+
+body.theme-dark #search-input::placeholder {
+    color: #6b7280;
+}
+
+body.theme-dark .search-clear-btn:hover {
+    background-color: #1b2330;
+    color: #e6edf3;
+}
+
+body.theme-dark .commit-item.highlight {
+    box-shadow: 0 0 0 2px rgba(3, 214, 151, 0.35);
+}
+
+body.theme-dark .commit-timeline {
+    background: #0f131a;
+    border-color: #2a3442;
+}
+
+body.theme-dark .timeline-label {
+    color: #9aa4b2;
+}
+
+body.theme-dark .timeline-track {
+    background: linear-gradient(90deg, #2a3442 0%, #4b5563 100%);
+}
+
+body.theme-dark .timeline-track-container::-webkit-scrollbar-track {
+    background: #1b2330;
+}
+
+body.theme-dark .timeline-track-container::-webkit-scrollbar-thumb {
+    background: #3a475a;
+}
+
+body.theme-dark .timeline-track-container::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+}
+
+body.theme-dark .graduation-tick {
+    background: #9aa4b2;
+}
+
+body.theme-dark .timeline-commit,
+body.theme-dark .timeline-commit.visible {
+    border-color: #0f131a;
+}
+
+body.theme-dark .release-section {
+    background-color: #151b24;
+    border-color: #2a3442;
+}
+
+body.theme-dark .release-header {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-bottom-color: #2a3442;
+}
+
+body.theme-dark .release-section.virtual-release .release-header {
+    background: linear-gradient(135deg, #8a4b00 0%, #5a2f00 100%);
+}
+
+body.theme-dark .release-summary {
+    background: #0f131a;
+    border-bottom-color: #2a3442;
+}
+
+body.theme-dark .release-category-badge {
+    background: #151b24;
+    border-color: #2a3442;
+    color: #e2e8f0;
+}
+
+body.theme-dark .release-section:hover {
+    border-color: #3a475a;
+}
+
+body.theme-dark .empty-section,
+body.theme-dark .loading {
+    color: #9aa4b2;
+    background-color: #151b24;
+}
+
+body.theme-dark .download-link {
+    background: #1b2330;
+    color: #e6edf3;
+    border-color: #2a3442;
+}
+
+body.theme-dark .download-link:hover {
+    background: #243043;
+    border-color: #3a475a;
 }

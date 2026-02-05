@@ -38,6 +38,57 @@ let currentViewMode = 'commit'; // 'commit' or 'release'
 let globalData = null; // Store data globally for mode switching
 let releases = []; // Store aggregated releases
 
+const THEME_STORAGE_KEY = 'releaseNotesTheme';
+
+function getPreferredTheme() {
+    if (globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+}
+
+function applyTheme(theme) {
+    document.body.classList.toggle('theme-dark', theme === 'dark');
+}
+
+function updateThemeToggleLabel(button, theme) {
+    if (!button) return;
+    if (theme === 'dark') {
+        button.textContent = '☀️';
+        button.title = 'Switch to light theme';
+    } else {
+        button.textContent = '🌙';
+        button.title = 'Switch to dark theme';
+    }
+}
+
+function setupThemeToggle() {
+    const button = document.getElementById('theme-toggle');
+    if (!button) return;
+
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    let activeTheme = storedTheme || getPreferredTheme();
+
+    applyTheme(activeTheme);
+    updateThemeToggleLabel(button, activeTheme);
+
+    button.addEventListener('click', () => {
+        activeTheme = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
+        localStorage.setItem(THEME_STORAGE_KEY, activeTheme);
+        applyTheme(activeTheme);
+        updateThemeToggleLabel(button, activeTheme);
+    });
+
+    if (!storedTheme && globalThis.matchMedia) {
+        const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (event) => {
+            const systemTheme = event.matches ? 'dark' : 'light';
+            applyTheme(systemTheme);
+            updateThemeToggleLabel(button, systemTheme);
+        });
+    }
+}
+
 async function loadReleaseNotes() {
     const viewControls = document.getElementById('view-controls');
     
