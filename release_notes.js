@@ -165,11 +165,13 @@ function displayMetadata(data) {
     const repoUrl = data.repository.url;
     const repoLink = repoUrl ? `<a href="${repoUrl}" target="_blank" class="repo-link">${data.repository.name}</a>` : data.repository.name;
     
-    // Update page title with repository name
-    document.getElementById('page-title').textContent = `${data.repository.name} - Release Notes`;
+    // Update page title and document title with repository name
+    const titleText = `${data.repository.name} - Release Notes`;
+    document.getElementById('page-title').textContent = titleText;
+    document.title = titleText;
     
     document.getElementById('metadata').innerHTML = `
-        <strong>Repository:</strong> ${repoLink} (${data.repository.branch}) | 
+        <strong>Repository:</strong> ${repoLink} | 
         <strong>Generated:</strong> ${data.generated_at}
     `;
 }
