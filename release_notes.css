@@ -281,19 +281,25 @@ h1 {
 
 .summary-sparkline {
     width: 100%;
-    height: 36px;
+}
+
+.sparkline-label {
+    font-size: 0.65em;
+    color: #718096;
+    margin-bottom: 2px;
+    text-align: left;
 }
 
 .summary-sparkline svg {
     width: 100%;
-    height: 100%;
+    height: 36px;
     display: block;
 }
 
 .sparkline-line {
     fill: none;
     stroke: #5da2f093;
-    stroke-width: 2;
+    stroke-width: 0.5px;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
@@ -302,7 +308,12 @@ h1 {
     fill: rgba(134, 139, 212, 0.103);
 }
 
-/* Category Cards - Professional and Compact */
+.sparkline-dot {
+    fill: #5da2f0;
+    stroke: white;
+    stroke-width: 0.5;
+}
+
 .summary-card:not(.total) {
     padding: 5px;
     display: flex;
@@ -691,7 +702,7 @@ h1 {
     width: 18px;
     height: 18px;
     background: #2c5282;
-    border: 3px solid white;
+    border: 1px solid white;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 6px rgba(44, 82, 130, 0.4);
@@ -1687,6 +1698,15 @@ body.theme-dark .summary-card.total .number-small {
 
 body.theme-dark .sparkline-area {
     fill: rgba(244, 162, 97, 0.2);
+}
+
+body.theme-dark .sparkline-dot {
+    fill: #f4a261;
+    stroke: #0f131a;
+}
+
+body.theme-dark .sparkline-label {
+    color: #9aa4b2;
 }
 
 body.theme-dark .summary-card:not(.total) .number {

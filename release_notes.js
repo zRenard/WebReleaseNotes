@@ -604,25 +604,26 @@ function buildSparkline(commits) {
         return '';
     }
 
-    const countsByDay = new Map();
-    let minTs = Number.POSITIVE_INFINITY;
-    let maxTs = 0;
+    // Get the same time range as the timeline
+    const timestamps = commits.map(c => c.timestamp).filter(t => t);
+    if (timestamps.length === 0) {
+        return '';
+    }
 
+    const oldestTime = Math.min(...timestamps);
+    const newestTime = Math.max(...timestamps);
+
+    const countsByDay = new Map();
     commits.forEach(commit => {
         if (!commit.timestamp) return;
         const ts = commit.timestamp * 1000;
-        minTs = Math.min(minTs, ts);
-        maxTs = Math.max(maxTs, ts);
         const dayKey = new Date(ts).toISOString().slice(0, 10);
         countsByDay.set(dayKey, (countsByDay.get(dayKey) || 0) + 1);
     });
 
-    if (!Number.isFinite(minTs)) {
-        return '';
-    }
-
-    const startDate = new Date(minTs);
-    const endDate = new Date(maxTs);
+    // Use the timeline date range (oldest to newest)
+    const startDate = new Date(oldestTime * 1000);
+    const endDate = new Date(newestTime * 1000);
     const startUTC = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
     const endUTC = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
 
@@ -662,11 +663,25 @@ function buildSparkline(commits) {
 
     const areaPath = `M ${padding},${height - padding} L ${points.join(' L ')} L ${lastX.toFixed(2)},${height - padding} Z`;
 
+    // Generate circle elements for each data point
+    const circles = points.map(point => {
+        const [x, y] = point.split(',');
+        return `<circle class="sparkline-dot" cx="${x}" cy="${y}" r="1.5"></circle>`;
+    }).join('');
+
+    // Format date range for label
+    const startDateStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const endDateStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const totalCommits = dailyCounts.reduce((sum, count) => sum + count, 0);
+    const daysSpan = dailyCounts.length;
+
     return `
-        <div class="summary-sparkline" aria-hidden="true">
-            <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img">
+        <div class="summary-sparkline">
+            <div class="sparkline-label">Commits per day (${startDateStr} - ${endDateStr}, ${daysSpan} ${daysSpan === 1 ? 'day' : 'days'})</div>
+            <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Sparkline showing ${totalCommits} commits over ${daysSpan} days">
                 <path class="sparkline-area" d="${areaPath}"></path>
                 <polyline class="sparkline-line" points="${points.join(' ')}"></polyline>
+                ${circles}
             </svg>
         </div>
     `;
