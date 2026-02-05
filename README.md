@@ -15,7 +15,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
 - 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in markdown output
-
+- ☀️/🌙 **Light/Dark themes**: Switch btween dark and light theme
 
 ## Description
 
