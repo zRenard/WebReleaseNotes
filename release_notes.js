@@ -431,7 +431,10 @@ function displaySummary(summary, commits) {
     
     // Build timeline
     const timeline = buildTimeline(commits);
-    
+
+    // Build sparkline for commits per day
+    const sparkline = buildSparkline(commits);
+
     // Build total card with tag count
     const totalCard = `
         <div class="summary-card total active" data-type="all">
@@ -449,6 +452,7 @@ function displaySummary(summary, commits) {
                 </div>
                 ` : ''}
             </div>
+            ${sparkline}
         </div>
     `;
     
@@ -593,6 +597,79 @@ function buildTimeline(commits) {
     }, 150);
     
     return timelineHTML;
+}
+
+function buildSparkline(commits) {
+    if (!commits || commits.length === 0) {
+        return '';
+    }
+
+    const countsByDay = new Map();
+    let minTs = Number.POSITIVE_INFINITY;
+    let maxTs = 0;
+
+    commits.forEach(commit => {
+        if (!commit.timestamp) return;
+        const ts = commit.timestamp * 1000;
+        minTs = Math.min(minTs, ts);
+        maxTs = Math.max(maxTs, ts);
+        const dayKey = new Date(ts).toISOString().slice(0, 10);
+        countsByDay.set(dayKey, (countsByDay.get(dayKey) || 0) + 1);
+    });
+
+    if (!Number.isFinite(minTs)) {
+        return '';
+    }
+
+    const startDate = new Date(minTs);
+    const endDate = new Date(maxTs);
+    const startUTC = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+    const endUTC = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+
+    const dailyCounts = [];
+    for (let d = new Date(startUTC); d <= endUTC; d = new Date(d.getTime() + 86400000)) {
+        const key = d.toISOString().slice(0, 10);
+        dailyCounts.push(countsByDay.get(key) || 0);
+    }
+
+    if (dailyCounts.length === 0) {
+        return '';
+    }
+
+    const width = 120;
+    const height = 36;
+    const padding = 2;
+    const maxCount = Math.max(...dailyCounts, 1);
+    let points = [];
+    let lastX;
+
+    if (dailyCounts.length === 1) {
+        const y = height - padding - (dailyCounts[0] / maxCount) * (height - padding * 2);
+        points = [
+            `${padding.toFixed(2)},${y.toFixed(2)}`,
+            `${(width - padding).toFixed(2)},${y.toFixed(2)}`
+        ];
+        lastX = width - padding;
+    } else {
+        const step = (width - padding * 2) / (dailyCounts.length - 1);
+        points = dailyCounts.map((value, index) => {
+            const x = padding + index * step;
+            const y = height - padding - (value / maxCount) * (height - padding * 2);
+            return `${x.toFixed(2)},${y.toFixed(2)}`;
+        });
+        lastX = padding + (dailyCounts.length - 1) * step;
+    }
+
+    const areaPath = `M ${padding},${height - padding} L ${points.join(' L ')} L ${lastX.toFixed(2)},${height - padding} Z`;
+
+    return `
+        <div class="summary-sparkline" aria-hidden="true">
+            <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img">
+                <path class="sparkline-area" d="${areaPath}"></path>
+                <polyline class="sparkline-line" points="${points.join(' ')}"></polyline>
+            </svg>
+        </div>
+    `;
 }
 
 function setupTimelineHandlers() {
