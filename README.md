@@ -40,26 +40,30 @@ The tool automatically classifies commits into categories (features, bug fixes, 
 ### Setup
 
 1. **Clone or download** this repository:
+
    ```bash
    git clone <your-repo-url>
    cd WebReleaseNotes
    ```
 
 2. **Install Python dependencies**:
+
    ```bash
    pip install -e .
    ```
 
 3. **Install Node.js dependencies**:
+
    ```bash
    npm install stylelint-config-standard
    ```
 
 4. **Generate release notes data**:
+
    ```bash
    python release_notes.py --num_commits 50 --output release_notes.json
    ```
-   
+
    Options:
    - `--num_commits N`: Number of commits to include (default: 10)
    - `--output FILE`: Output JSON file path (default: release_notes.json)
@@ -87,6 +91,7 @@ node server.js
 Visit `http://localhost:3000` in your browser.
 
 #### CSP rules
+
 The development server includes Content Security Policy (CSP) headers to enhance security. If you encounter issues loading resources, ensure your browser supports CSP and that no extensions are interfering.
 Validate that the CSP headers are correctly set by checking the browser's developer console for any CSP-related errors.
 
@@ -114,11 +119,13 @@ Output files are created in the `out/` directory.
 ### GitHub Pages Deployment
 
 1. **Generate production files**:
+
    ```bash
    ./local.sh
    ```
 
 2. **Copy output files** from `out/` directory to your GitHub Pages branch or deployment folder:
+
    ```bash
    cp out/release_notes.html index.html
    cp out/release_notes.css release_notes.css
@@ -127,6 +134,7 @@ Output files are created in the `out/` directory.
    ```
 
 3. **Commit and push** to GitHub Pages:
+
    ```bash
    git add index.html release_notes.* 
    git commit -m "Update release notes"
@@ -138,16 +146,19 @@ Output files are created in the `out/` directory.
 For any static web server (Apache, Nginx, etc.):
 
 1. **Build production files**:
+
    ```bash
    ./local.sh
    ```
 
 2. **Copy files** from `out/` directory to your web server's document root:
+
    ```bash
    cp out/* /var/www/html/release-notes/
    ```
 
 3. **Configure release notes generation**:
+
    ```
    python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
    ```
@@ -217,12 +228,14 @@ When using the `--markdown` option, the script generates a formatted markdown fi
   - **Optional Timeline**: Use `--md_timeline` to include an ASCII visual timeline showing all commits grouped by date
 
 The timeline visualization features:
+
 - 📅 Date grouping with chronological ordering (latest first)
 - ✨ Emoji indicators for commit types (features, fixes, docs, etc.)
 - 🌳 Tree-style ASCII structure using box-drawing characters
 - 📊 Statistics summary (insertions, deletions, files changed)
 
 Example usage:
+
 ```bash
 # Generate both JSON and markdown
 python release_notes.py --markdown RELEASE_NOTES.md --num_commits 50

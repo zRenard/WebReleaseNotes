@@ -440,6 +440,7 @@ function displaySummary(summary, commits) {
     // Build total card with tag count
     const totalCard = `
         <div class="summary-card total active" data-type="all">
+            <div class="summary-total-row">
             <span class="icon">📊</span>
             <div class="summary-numbers">
                 <div class="summary-main">
@@ -453,6 +454,7 @@ function displaySummary(summary, commits) {
                     <span class="label-small">Tagged</span>
                 </div>
                 ` : ''}
+                </div>
             </div>
             ${sparkline}
         </div>
@@ -1328,5 +1330,6 @@ function getTextNodes(element) {
 }
 
 (async () => {
+    setupThemeToggle();
     await loadReleaseNotes();
 })();
