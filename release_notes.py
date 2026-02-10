@@ -8,6 +8,7 @@ and exports them to JSON format for publishing release notes on GitHub Pages.
 import git
 import json
 import argparse
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -15,6 +16,43 @@ from pathlib import Path
 def timestamp_to_date(timestamp):
     """Convert Unix timestamp to date string (YYYY-MM-DD HH:MM:SS)."""
     return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+
+def is_semver_tag(tag):
+    """
+    Check if a tag follows semantic versioning (SemVer) format.
+    
+    SemVer format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+    Examples: 1.0.0, 2.1.3, 1.0.0-alpha, 1.0.0-beta.1, 1.0.0+build.123
+    
+    Args:
+        tag: Tag string to validate
+    
+    Returns:
+        True if tag matches SemVer format, False otherwise
+    """
+    # SemVer regex pattern
+    semver_pattern = r'^[vV]\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?(?:\+[a-zA-Z0-9.-]+)?$'
+    return bool(re.match(semver_pattern, tag))
+
+
+def is_release_version(tag):
+    """
+    Check if a tag is a release version (not a pre-release).
+    
+    Excludes tags with pre-release markers like -PR-, -alpha, -beta, -rc, etc.
+    
+    Args:
+        tag: Tag string to validate
+    
+    Returns:
+        True if tag is a stable release version, False if it's a pre-release
+    """
+    # Return False if tag contains pre-release markers
+    if '-' in tag:
+        return False
+    # Must also be valid SemVer format (MAJOR.MINOR.PATCH)
+    return bool(re.match(r'^[vV]\d+\.\d+\.\d+(?:\+[a-zA-Z0-9.-]+)?$', tag))
 
 
 def classify_commit(first_line, author, full_message):
@@ -72,9 +110,33 @@ def classify_commit(first_line, author, full_message):
         return 'chore'
 
     return 'other'
+def _compile_patterns(patterns):
+    return [re.compile(p, re.IGNORECASE) for p in patterns if p]
 
 
-def get_repository_commits(repo_path, num_commits=10, branch='main'):
+def should_exclude_commit(first_line, author, full_message,
+                          exclude_title_patterns=None,
+                          exclude_author_patterns=None,
+                          exclude_message_patterns=None):
+    """Return True if commit should be excluded based on title/author/message."""
+    title_patterns = _compile_patterns(exclude_title_patterns or [])
+    author_patterns = _compile_patterns(exclude_author_patterns or [])
+    message_patterns = _compile_patterns(exclude_message_patterns or [])
+
+    title = first_line or ''
+    author_val = author or ''
+    message = full_message or ''
+
+    if any(p.search(title) for p in title_patterns):
+        return True
+    if any(p.search(author_val) for p in author_patterns):
+        return True
+    if any(p.search(message) for p in message_patterns):
+        return True
+    return False
+def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_title_patterns=None,
+                           exclude_author_patterns=None,
+                           exclude_message_patterns=None):
     """
     Extract last N commits from the current repository.
     
@@ -95,6 +157,9 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
         tags_by_commit = {}
         for tag in repo.tags:
             try:
+                # Only include release versions (exclude pre-releases like -PR-)
+                if not is_release_version(tag.name):
+                    continue
                 commit_hash = tag.commit.hexsha
                 if commit_hash not in tags_by_commit:
                     tags_by_commit[commit_hash] = []
@@ -106,6 +171,16 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
             # Extract commit type and scope from conventional commit format
             message_lines = commit.message.strip().split('\n')
             first_line = message_lines[0]
+
+            if should_exclude_commit(
+                first_line,
+                commit.author.name,
+                commit.message,
+                exclude_title_patterns=exclude_title_patterns,
+                exclude_author_patterns=exclude_author_patterns,
+                exclude_message_patterns=exclude_message_patterns,
+            ):
+                continue
             
             # Classify commit with conventional prefix + heuristics
             commit_type = classify_commit(first_line, commit.author.name, commit.message)
@@ -140,7 +215,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main'):
     return commits_data
 
 
-def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False, include_timeline=False):
+def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False, include_timeline=False, exclude_title_patterns=None, exclude_author_patterns=None,exclude_message_patterns=None):
     """
     Export commit messages from current repository to JSON for release notes.
     
@@ -155,7 +230,9 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     """
     print(f"[*] Extracting {num_commits} commits from branch '{branch}'...")
     
-    commits = get_repository_commits(repo_path, num_commits, branch)
+    commits = get_repository_commits(repo_path, num_commits, branch,exclude_title_patterns=exclude_title_patterns,
+        exclude_author_patterns=exclude_author_patterns,
+        exclude_message_patterns=exclude_message_patterns)
     
     # Get repository info
     repo = git.Repo(repo_path)
@@ -230,7 +307,7 @@ def generate_markdown(release_data, latest_release_only=False, include_timeline=
     md_lines.append("---")
     md_lines.append("")
     
-    # Check if there are release tags (tags starting with v or V)
+    # Check if there are release tags (tags starting with v or V or (SemVer format: MAJOR.MINOR.PATCH))
     releases = parse_releases(release_data['commits'])
     
     if releases:
@@ -249,7 +326,7 @@ def generate_markdown(release_data, latest_release_only=False, include_timeline=
 
 def parse_releases(commits):
     """
-    Parse commits to identify releases based on tags starting with 'v' or 'V'.
+    Parse commits to identify releases based on tags starting with 'v' or 'V' or SemVer format: MAJOR.MINOR.PATCH
     
     Args:
         commits: List of commit dictionaries
@@ -266,8 +343,8 @@ def parse_releases(commits):
                 if tag not in tag_first_index:
                     tag_first_index[tag] = index
     
-    # Filter to only include release tags (starting with 'v' or 'V')
-    release_tags = [tag for tag in tag_first_index.keys() if tag.startswith('v') or tag.startswith('V')]
+    # Filter to only include release tags (starting with 'v' or 'V' or SemVer format: MAJOR.MINOR.PATCH)
+    release_tags = [tag for tag in tag_first_index.keys() if is_semver_tag(tag)]
     
     if not release_tags:
         return []
@@ -798,6 +875,27 @@ def main():
         action='store_true',
         help='Include timeline visualization in markdown output (default: False)'
     )
+
+    parser.add_argument(
+        '--exclude_title',
+        action='append',
+        default=[],
+        help='Regex pattern to exclude commits by title (repeatable)'
+    )
+
+    parser.add_argument(
+        '--exclude_author',
+        action='append',
+        default=[],
+        help='Regex pattern to exclude commits by author (repeatable)'
+    )
+
+    parser.add_argument(
+        '--exclude_message',
+        action='append',
+        default=[],
+        help='Regex pattern to exclude commits by full message content (repeatable)'
+    )
     
     args = parser.parse_args()
     
@@ -809,7 +907,10 @@ def main():
         args.branch,
         args.markdown,
         latest_release_only=args.md_latest_release_only,
-        include_timeline=args.md_timeline
+        include_timeline=args.md_timeline,
+        exclude_title_patterns=args.exclude_title,
+        exclude_author_patterns=args.exclude_author,
+        exclude_message_patterns=args.exclude_message
     )
 
 

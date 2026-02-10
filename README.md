@@ -9,6 +9,7 @@ A web-based release notes viewer that generates beautiful, interactive release n
 - 🎨 **Interactive Timeline**: Visual representation of commits with zoom capabilities
 - 🔎 **Client-side Search**: Search by title, message content, author, type, release tag, and date
 - 🔍 **Smart Filtering**: Filter by commit type (features, fixes, docs, chores)
+- 🔧 **Commit Exclusion**: Exclude commits by title, author, or message using regex patterns (repeatable)
 - 📊 **Statistics Dashboard**: Summary cards showing commit counts by category
 - 🚀 **Auto-classification**: Automatically categorizes commits using conventional commit standards
 - 🌐 **GitHub Integration**: Direct links to commits and repository
@@ -67,6 +68,9 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    - `--md_latest_release_only`: Generate markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
    - `--repo_path PATH`: Path to the repository (default: current directory)
    - `--branch BRANCH`: Branch to analyze (default: main)
+   - `--exclude_title REGEX`: Exclude commits whose title matches the regex (repeatable)
+   - `--exclude_author REGEX`: Exclude commits whose author matches the regex (repeatable)
+   - `--exclude_message REGEX`: Exclude commits whose full message matches the regex (repeatable)
 
 ## Testing
 
@@ -194,7 +198,7 @@ For CI/CD pipelines, add these steps to your workflow:
 
 ### Release Tags
 
-The tool automatically detects Git tags starting with `v` or `V` (e.g., `v1.0.0`, `V2.1.3`) and groups commits accordingly. Commits before the first tag are grouped into an "Incoming" virtual release.
+The tool automatically detects **SemVer** tags (e.g., `1.0.0`, `2.1.3`) and tags starting with `v` or `V` (e.g., `v1.0.0`, `V2.1.3`) then groups commits accordingly. **Pre-release tags** (e.g., `1.0.0-alpha`, `1.0.0-rc.1`) are ignored. Commits before the first tag are grouped into an "Incoming" virtual release.
 
 ### Markdown Output
 
