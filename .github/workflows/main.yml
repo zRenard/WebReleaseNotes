@@ -82,7 +82,7 @@ jobs:
         run: |
           # Create a directory for the Pages content
           mkdir -p pages
-          python release_notes.py --num_commits 50 --output ./pages/release_notes.json
+          python release_notes.py --num_commits 50  --branch HEAD --output ./pages/release_notes.json
           cp release_notes.html ./pages/index.html
           cp release_notes.js ./pages/
           cp release_notes.css ./pages/ 
