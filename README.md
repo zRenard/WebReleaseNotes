@@ -2,6 +2,11 @@
 
 A web-based release notes viewer that generates beautiful, interactive release notes from Git commit history. Features include commit-by-commit view, release-by-release aggregation, and a visual timeline with filtering capabilities.
 
+## Demo
+
+https://zrenard.github.io/WebReleaseNotes/
+
+
 ## Features
 
 - 📋 **Dual View Modes**: View commits individually or aggregated by release tags
