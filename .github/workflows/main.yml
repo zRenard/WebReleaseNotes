@@ -5,6 +5,13 @@ on:
     tags:
     - 'v*'
 name: 🚀 Validate and build artifact
+
+# These permissions are needed for GitHub Pages and repository access
+permissions:
+  contents: read
+  pages: write      # Needed to deploy to Pages
+  id-token: write   # Needed for auth with Pages
+
 jobs:
   web-flow:
     name: Website Build, Validate, and Publish
@@ -66,6 +73,23 @@ jobs:
           name: deploy-files
           path: deploy/
           retention-days: 1
+      - name: Export release notes from current repository
+        run: |
+          # Create a directory for the Pages content
+          mkdir -p pages
+          python release_notes.py --num_commits 50 --output ./pages/release_notes.json
+          cp release_notes.html ./pages/index.html
+          cp release_notes.js ./pages/
+          cp release_notes.css ./pages/ 
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5        
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
   
   create-release:
     name: Create GitHub Release
