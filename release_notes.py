@@ -6,6 +6,7 @@ and exports them to JSON format for publishing release notes on GitHub Pages.
 """
 
 import git
+import subprocess
 import json
 import argparse
 import re
@@ -153,19 +154,92 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
         repo = git.Repo(repo_path)
         commits = list(repo.iter_commits(branch, max_count=num_commits))
         
+        # Set of recent commit hashes (last N on the branch)
+        commits_hashes = set(c.hexsha for c in commits)
+
         # Get all tags and their associated commit hashes
         tags_by_commit = {}
+        # Réaffecter les tags légers à un commit descendant présent dans la plage
+        # (ne pas ajouter de nouveaux commits en dehors des N derniers)
+        
         for tag in repo.tags:
             try:
                 # Only include release versions (exclude pre-releases like -PR-)
                 if not is_release_version(tag.name):
                     continue
-                commit_hash = tag.commit.hexsha
+                # Peel the tag name to the commit it ultimately points to
+                try:
+                    commit_hash = repo.commit(tag.name).hexsha
+                except Exception:
+                    # fallback to tag.commit if peel fails
+                    commit_hash = getattr(tag.commit, 'hexsha', None)
+                if not commit_hash:
+                    continue
                 if commit_hash not in tags_by_commit:
                     tags_by_commit[commit_hash] = []
                 tags_by_commit[commit_hash].append(tag.name)
-            except:
+            except Exception:
                 continue
+
+        # Associate tags whose commit is not in the recent N commits
+        # to the recent commit that contains them (i.e. the tag commit
+        # is an ancestor of that recent commit). This keeps us within
+        # the defined range while recovering lightweight tags based on merges.
+        # Ajout : pour chaque tag, si le commit n'est pas dans la plage, on l'ajoute
+        
+        for tag_commit_hash, tag_names in list(tags_by_commit.items()):
+            if tag_commit_hash in commits_hashes:
+                continue
+            attached = False
+            # 1) Try ancestry (tag commit is ancestor of a recent commit)
+            for recent in commits:
+                try:
+                    repo.git.merge_base('--is-ancestor', tag_commit_hash, recent.hexsha)
+                    if recent.hexsha not in tags_by_commit:
+                        tags_by_commit[recent.hexsha] = []
+                    for t in tag_names:
+                        if t not in tags_by_commit[recent.hexsha]:
+                            tags_by_commit[recent.hexsha].append(t)
+                    attached = True
+                    break
+                except Exception:
+                    continue
+            if attached:
+                continue
+            # 2) If not ancestor, try patch-id matching: the tag commit
+            # may have been merged/squashed producing a different hash
+            # but the same patch; compute patch-id and compare with
+            # recent commits' patch-ids.
+            def get_patch_id(commit_hash):
+                try:
+                    # Use bytes to avoid encoding errors on Windows
+                    diff = subprocess.run(['git', 'show', commit_hash], stdout=subprocess.PIPE, check=True)
+                    p = subprocess.run(['git', 'patch-id', '--stable'], input=diff.stdout, stdout=subprocess.PIPE, check=True)
+                    out = p.stdout.decode('utf-8', errors='ignore').strip()
+                    if out:
+                        return out.split()[0]
+                except Exception:
+                    return None
+            tag_pid = get_patch_id(tag_commit_hash)
+            if not tag_pid:
+                continue
+            # Precompute recent commits patch-ids once
+            recent_patch_ids = {}
+            for recent in commits:
+                try:
+                    pid = get_patch_id(recent.hexsha)
+                    if pid:
+                        recent_patch_ids[recent.hexsha] = pid
+                except Exception:
+                    continue
+            for recent_hash, pid in recent_patch_ids.items():
+                if pid == tag_pid:
+                    if recent_hash not in tags_by_commit:
+                        tags_by_commit[recent_hash] = []
+                    for t in tag_names:
+                        if t not in tags_by_commit[recent_hash]:
+                            tags_by_commit[recent_hash].append(t)
+                    break
         
         for commit in commits:
             # Extract commit type and scope from conventional commit format
