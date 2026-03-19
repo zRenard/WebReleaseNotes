@@ -62,7 +62,37 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    npm install stylelint-config-standard
    ```
 
-4. **Generate release notes data**:
+4. **Create a tag in your repository** (optional, for testing release grouping):
+
+   ```bash
+   git tag -a v1.0.0 -m "Release 1.0.0"
+   ```
+
+   publish the tag if needed:
+
+   ```bash
+   git push origin v1.0.0
+   ```
+
+   view remote tags:
+
+   ```bash
+   git ls-remote --tags origin
+   ```
+
+   get remote tags:
+
+   ```bash
+   git fetch --tags
+   ```
+
+   Use this config if you want to always push tags when pushing commits:
+
+   ```bash
+   git config --global push.followTags true
+   ```
+
+5. **Generate release notes data**:
 
    ```bash
    python release_notes.py --num_commits 50 --output release_notes.json
