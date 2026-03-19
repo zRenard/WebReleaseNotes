@@ -6,7 +6,6 @@ A web-based release notes viewer that generates beautiful, interactive release n
 
 https://zrenard.github.io/WebReleaseNotes/
 
-
 ## Features
 
 - 📋 **Dual View Modes**: View commits individually or aggregated by release tags
@@ -164,7 +163,7 @@ For any static web server (Apache, Nginx, etc.):
 
 3. **Configure release notes generation**:
 
-   ```
+   ```bash
    python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
    ```
 
@@ -260,7 +259,7 @@ python release_notes.py --branch develop --markdown RELEASE_NOTES.md
 
 ## Project Structure
 
-```
+```text
 WebReleaseNotes/
 ├── release_notes.py       # Python script for generating commit data
 ├── release_notes.html     # Main HTML interface
