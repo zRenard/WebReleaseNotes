@@ -20,7 +20,7 @@ https://zrenard.github.io/WebReleaseNotes/
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
 - 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in markdown output
-- ☀️/🌙 **Light/Dark themes**: Switch btween dark and light theme
+- ☀️/🌙 **Light/Dark themes**: Switch between dark and light theme
 
 ## Description
 
