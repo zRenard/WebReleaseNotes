@@ -37,6 +37,11 @@ function isReleaseVersionTag(tag) {
 let currentViewMode = 'commit'; // 'commit' or 'release'
 let globalData = null; // Store data globally for mode switching
 let releases = []; // Store aggregated releases
+let activeTypeFilter = 'all';
+let selectedDayFilter = '';
+let calendarVisibleMonth = null;
+let lastSummaryData = null;
+let lastSummaryCommits = null;
 
 const THEME_STORAGE_KEY = 'releaseNotesTheme';
 
@@ -422,8 +427,15 @@ function updateSummaryForReleaseView(releasesToDisplay) {
 }
 
 function displaySummary(summary, commits) {
+    lastSummaryData = summary;
+    lastSummaryCommits = commits;
     const summaryEl = document.getElementById('summary');
     summaryEl.style.display = 'flex';
+    const viewControls = document.getElementById('view-controls');
+    if (viewControls) {
+        // Detach first so it survives summaryEl.innerHTML replacement.
+        viewControls.remove();
+    }
     
     // Build cards dynamically based on what types are in the summary
     const allKeys = Object.keys(summary).filter(k => k !== 'total');
@@ -437,9 +449,18 @@ function displaySummary(summary, commits) {
     // Build sparkline for commits per day
     const sparkline = buildSparkline(commits);
 
+    // Build calendar widget for commits (respect active category filter)
+    const calendarCommits = getCommitsForActiveTypeFilter(commits);
+    let calendarSourceCommits = calendarCommits;
+    let calendarWidget = buildCommitCalendar(calendarSourceCommits);
+    if (!calendarWidget) {
+        calendarSourceCommits = commits;
+        calendarWidget = buildCommitCalendar(calendarSourceCommits);
+    }
+
     // Build total card with tag count
     const totalCard = `
-        <div class="summary-card total active" data-type="all">
+        <div class="summary-card total" data-type="all">
             <div class="summary-total-row">
             <span class="icon">📊</span>
             <div class="summary-numbers">
@@ -460,20 +481,22 @@ function displaySummary(summary, commits) {
         </div>
     `;
     
-    const summaryTop = `
-        <div class="summary-top">
-            ${totalCard}
-            ${timeline}
-        </div>
-    `;
-    
     // Build category cards for types with counts > 0
     const categoryCards = [];
+
+    // Add an explicit "All" category to reset any active filters
+    categoryCards.push(`
+        <div class="summary-card all ${activeTypeFilter === 'all' ? 'active' : ''}" data-type="all">
+            <span class="icon">🔄</span>
+            <span class="number">${summary.total}</span>
+            <span class="label">All</span>
+        </div>
+    `);
     
     // Add Tags category card first if there are tagged commits
     if (taggedCommitsCount > 0) {
         categoryCards.push(`
-            <div class="summary-card tags" data-type="tags">
+            <div class="summary-card tags ${activeTypeFilter === 'tags' ? 'active' : ''}" data-type="tags">
                 <span class="icon">🏷️</span>
                 <span class="number">${taggedCommitsCount}</span>
                 <span class="label">Tags</span>
@@ -487,7 +510,7 @@ function displaySummary(summary, commits) {
             if (value && value > 0) {
                 const typeInfo = TYPE_LABELS[key] || { label: key, icon: '📦' };
                 categoryCards.push(`
-                    <div class="summary-card ${key}" data-type="${key}">
+                    <div class="summary-card ${key} ${activeTypeFilter === key ? 'active' : ''}" data-type="${key}">
                         <span class="icon">${typeInfo.icon}</span>
                         <span class="number">${value}</span>
                         <span class="label">${typeInfo.label}</span>
@@ -496,14 +519,24 @@ function displaySummary(summary, commits) {
             }
         }
     });
-    
-    const categoriesSection = categoryCards.length > 0 ? `
-        <div class="summary-categories">
-            ${categoryCards.join('')}
+
+    summaryEl.innerHTML = `
+        <div class="summary-top">
+            ${calendarWidget}
+            <div class="summary-right-column">
+                <div id="summary-view-controls-slot"></div>
+                <div class="summary-top-main">
+                    ${totalCard}
+                    <div class="summary-categories">
+                        ${categoryCards.join('')}
+                    </div>
+                </div>
+            </div>
         </div>
-    ` : '';
-    
-    summaryEl.innerHTML = summaryTop + categoriesSection;
+        <div class="summary-body">
+            ${timeline}
+        </div>
+    `;
     
     // Add click handlers for filtering
     document.querySelectorAll('.summary-card').forEach(card => {
@@ -515,15 +548,272 @@ function displaySummary(summary, commits) {
             if (filterType === 'all') {
                 collapseAllCommits();
             }
-            
-            // Update active state
-            document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            
+
+            // Re-render summary so calendar also reflects the active category filter
+            displaySummary(summary, commits);
+
             // Deactivate timeline dots
-            document.querySelectorAll('.timeline-commit').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.timeline-commit, .timeline-tag').forEach(d => d.classList.remove('active'));
         });
     });
+
+    const viewControlsSlot = document.getElementById('summary-view-controls-slot');
+    if (viewControls && viewControlsSlot) {
+        viewControlsSlot.appendChild(viewControls);
+    }
+
+    setupCalendarWidgetHandlers(summary, commits);
+    filterCommitsByType(activeTypeFilter);
+}
+
+function updateFilterStatusBar() {
+    const bar = document.getElementById('filter-status-bar');
+    if (!bar) return;
+
+    const chips = [];
+
+    if (activeTypeFilter !== 'all') {
+        const typeInfo = activeTypeFilter === 'tags'
+            ? { label: 'Tags', icon: '🏷️' }
+            : (TYPE_LABELS[activeTypeFilter] || { label: activeTypeFilter, icon: '📦' });
+        chips.push(`<span class="filter-chip type-${activeTypeFilter}" data-remove-filter="type">${typeInfo.icon} ${typeInfo.label}<button class="filter-chip-remove" title="Remove category filter">✕</button></span>`);
+    }
+
+    if (selectedDayFilter) {
+        chips.push(`<span class="filter-chip filter-chip-day" data-remove-filter="day">📅 ${selectedDayFilter}<button class="filter-chip-remove" title="Remove day filter">✕</button></span>`);
+    }
+
+    if (searchQuery) {
+        chips.push(`<span class="filter-chip filter-chip-search" data-remove-filter="search">🔍 &quot;${escapeHtml(searchQuery)}&quot;<button class="filter-chip-remove" title="Remove search filter">✕</button></span>`);
+    }
+
+    if (chips.length === 0) {
+        bar.classList.add('hidden');
+        bar.innerHTML = '';
+        return;
+    }
+
+    bar.classList.remove('hidden');
+    bar.innerHTML = `<span class="filter-status-label">Active filters:</span>${chips.join('')}`;
+
+    bar.querySelectorAll('[data-remove-filter]').forEach(chip => {
+        chip.querySelector('.filter-chip-remove').addEventListener('click', e => {
+            e.stopPropagation();
+            const filter = chip.dataset.removeFilter;
+            if (filter === 'type') {
+                filterCommitsByType('all');
+                if (lastSummaryData && lastSummaryCommits) {
+                    displaySummary(lastSummaryData, lastSummaryCommits);
+                }
+            } else if (filter === 'day') {
+                selectedDayFilter = '';
+                if (lastSummaryData && lastSummaryCommits) {
+                    displaySummary(lastSummaryData, lastSummaryCommits);
+                } else {
+                    applyDayFilterToCommits();
+                }
+            } else if (filter === 'search') {
+                searchQuery = '';
+                const input = document.getElementById('search-input');
+                if (input) input.value = '';
+                document.getElementById('search-clear')?.classList.remove('visible');
+                document.getElementById('search-info').textContent = '';
+                document.getElementById('search-info').classList.remove('has-results');
+                performSearch('');
+            }
+        });
+    });
+}
+
+function getCommitsForActiveTypeFilter(commits) {
+    if (!Array.isArray(commits) || commits.length === 0) {
+        return [];
+    }
+
+    if (activeTypeFilter === 'tags') {
+        return commits.filter(c => c.tags && c.tags.length > 0);
+    }
+
+    return commits.filter(c => (c.type || 'other').toLowerCase() === activeTypeFilter);
+}
+
+function getUTCDateKeyFromTimestamp(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function buildCommitCalendar(commits) {
+    if (!commits || commits.length === 0) {
+        return '';
+    }
+
+    const validTimestamps = commits.map(c => c.timestamp).filter(Boolean);
+    if (validTimestamps.length === 0) {
+        return '';
+    }
+
+    const dayStats = new Map();
+
+    commits.forEach(commit => {
+        if (!commit.timestamp) return;
+
+        const dayKey = getUTCDateKeyFromTimestamp(commit.timestamp);
+        const type = (commit.type || 'other').toLowerCase();
+        const normalizedType = TYPE_LABELS[type] ? type : 'other';
+
+        if (!dayStats.has(dayKey)) {
+            dayStats.set(dayKey, {
+                total: 0,
+                byType: {},
+                timestamp: commit.timestamp
+            });
+        }
+
+        const stat = dayStats.get(dayKey);
+        stat.total++;
+        stat.byType[normalizedType] = (stat.byType[normalizedType] || 0) + 1;
+    });
+
+    const minTimestamp = Math.min(...validTimestamps);
+    const maxTimestamp = Math.max(...validTimestamps);
+
+    const minMonth = new Date(minTimestamp * 1000);
+    const maxMonth = new Date(maxTimestamp * 1000);
+    const minMonthStart = new Date(Date.UTC(minMonth.getUTCFullYear(), minMonth.getUTCMonth(), 1));
+    const maxMonthStart = new Date(Date.UTC(maxMonth.getUTCFullYear(), maxMonth.getUTCMonth(), 1));
+
+    if (!calendarVisibleMonth) {
+        const now = new Date();
+        const todayMonthStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+        if (todayMonthStart >= minMonthStart && todayMonthStart <= maxMonthStart) {
+            calendarVisibleMonth = todayMonthStart;
+        } else {
+            calendarVisibleMonth = new Date(maxMonthStart);
+        }
+    }
+    if (calendarVisibleMonth < minMonthStart) {
+        calendarVisibleMonth = new Date(minMonthStart);
+    }
+    if (calendarVisibleMonth > maxMonthStart) {
+        calendarVisibleMonth = new Date(maxMonthStart);
+    }
+
+    const monthSections = [];
+    const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const year = calendarVisibleMonth.getUTCFullYear();
+    const month = calendarVisibleMonth.getUTCMonth();
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    const firstDayOfWeek = (new Date(Date.UTC(year, month, 1)).getUTCDay() + 6) % 7;
+    const monthLabel = new Date(Date.UTC(year, month, 1)).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+    });
+    const isPrevDisabled = calendarVisibleMonth.getTime() === minMonthStart.getTime();
+    const isNextDisabled = calendarVisibleMonth.getTime() === maxMonthStart.getTime();
+    const clearButtonClass = selectedDayFilter ? '' : ' hidden';
+
+    const leadingEmptyDays = Array.from({ length: firstDayOfWeek }, () => '<div class="commit-calendar-day empty" aria-hidden="true"></div>').join('');
+
+    const todayKey = (() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    })();
+
+    const dayCells = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const stat = dayStats.get(dayKey);
+        const isSelected = selectedDayFilter === dayKey;
+        const isToday = dayKey === todayKey;
+
+        if (!stat) {
+            dayCells.push(`
+                <div class="commit-calendar-day${isToday ? ' today' : ''}" title="${dayKey}: no commits">
+                    <span class="calendar-day-number">${day}</span>
+                </div>
+            `);
+            continue;
+        }
+
+        const dominantType = Object.entries(stat.byType)
+            .sort((a, b) => b[1] - a[1])[0][0];
+        const typeInfo = TYPE_LABELS[dominantType] || TYPE_LABELS.other;
+
+        const breakdown = Object.entries(stat.byType)
+            .sort((a, b) => b[1] - a[1])
+            .map(([typeKey, count]) => {
+                const info = TYPE_LABELS[typeKey] || { label: typeKey, icon: '📦' };
+                return `${info.icon} ${info.label}: ${count}`;
+            })
+            .join(' | ');
+
+        dayCells.push(`
+            <button type="button" class="commit-calendar-day has-commits type-${dominantType} ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}" data-calendar-day="${dayKey}" title="${dayKey}: ${stat.total} commits | ${breakdown}">
+                <span class="calendar-day-number">${day}</span>
+                <span class="calendar-day-icon">${typeInfo.icon}</span>
+                <span class="calendar-day-count">${stat.total}</span>
+            </button>
+        `);
+    }
+
+    monthSections.push(`
+        <section class="commit-calendar-month">
+            <div class="commit-calendar-toolbar">
+                <button type="button" class="commit-calendar-nav" data-calendar-nav="prev" ${isPrevDisabled ? 'disabled' : ''}>◀</button>
+                <h3 class="commit-calendar-month-title">${monthLabel}</h3>
+                <button type="button" class="commit-calendar-nav" data-calendar-nav="next" ${isNextDisabled ? 'disabled' : ''}>▶</button>
+            </div>
+            <div class="commit-calendar-weekdays">
+                ${weekdayLabels.map(label => `<span>${label}</span>`).join('')}
+            </div>
+            <div class="commit-calendar-grid">
+                ${leadingEmptyDays}
+                ${dayCells.join('')}
+            </div>
+            <div class="commit-calendar-actions">
+                <button type="button" class="commit-calendar-clear${clearButtonClass}" id="calendar-clear-filter">Clear day filter</button>
+            </div>
+        </section>
+    `);
+
+    return `
+        <section class="commit-calendar-widget" aria-label="Commit calendar">
+            <div class="commit-calendar-months">
+                ${monthSections.join('')}
+            </div>
+        </section>
+    `;
+}
+
+function setupCalendarWidgetHandlers(summary, commits) {
+    document.querySelectorAll('.commit-calendar-nav').forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.disabled || !calendarVisibleMonth) return;
+            const direction = button.dataset.calendarNav === 'next' ? 1 : -1;
+            calendarVisibleMonth = new Date(calendarVisibleMonth);
+            calendarVisibleMonth.setUTCMonth(calendarVisibleMonth.getUTCMonth() + direction);
+            displaySummary(summary, commits);
+        });
+    });
+
+    document.querySelectorAll('[data-calendar-day]').forEach(dayButton => {
+        dayButton.addEventListener('click', () => {
+            selectedDayFilter = dayButton.dataset.calendarDay || '';
+            displaySummary(summary, commits);
+        });
+    });
+
+    const clearButton = document.getElementById('calendar-clear-filter');
+    if (clearButton) {
+        clearButton.addEventListener('click', () => {
+            selectedDayFilter = '';
+            displaySummary(summary, commits);
+        });
+    }
 }
 
 function buildTimeline(commits) {
@@ -839,6 +1129,8 @@ function collapseAllCommits() {
 }
 
 function filterByCommitHash(hash) {
+    activeTypeFilter = 'all';
+    selectedDayFilter = '';
     const commits = document.querySelectorAll('.commit-item');
     
     commits.forEach(commit => {
@@ -862,6 +1154,7 @@ function filterByCommitHash(hash) {
     
     // Update summary cards to deactivate all
     document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
+    updateFilterStatusBar();
 }
 
 function scrollToCommit(hash) {
@@ -888,7 +1181,37 @@ function scrollToCommit(hash) {
     }
 }
 
+function applyDayFilterToCommits() {
+    const commits = document.querySelectorAll('.commit-item');
+    commits.forEach(commit => {
+        if (!selectedDayFilter) {
+            commit.classList.remove('day-filter-hidden');
+            return;
+        }
+        if (commit.dataset.commitDay === selectedDayFilter) {
+            commit.classList.remove('day-filter-hidden');
+        } else {
+            commit.classList.add('day-filter-hidden');
+        }
+    });
+    updateReleaseVisibilityByActiveFilters();
+    updateFilterStatusBar();
+}
+
+function updateReleaseVisibilityByActiveFilters() {
+    if (currentViewMode !== 'release') return;
+    document.querySelectorAll('.release-section').forEach(releaseEl => {
+        const visibleCommits = releaseEl.querySelectorAll('.commit-item:not(.hidden):not(.search-hidden):not(.day-filter-hidden)');
+        if (visibleCommits.length === 0) {
+            releaseEl.classList.add('search-hidden');
+        } else {
+            releaseEl.classList.remove('search-hidden');
+        }
+    });
+}
+
 function filterCommitsByType(type) {
+    activeTypeFilter = type;
     const commits = document.querySelectorAll('.commit-item');
     const timelineDots = document.querySelectorAll('.timeline-commit');
     
@@ -947,6 +1270,8 @@ function filterCommitsByType(type) {
             tag.style.opacity = '0.6';
         }
     });
+
+    applyDayFilterToCommits();
 }
 
 function displayCommits(data) {
@@ -994,6 +1319,11 @@ function displayCommits(data) {
     }
 
     setupToggleHandlers();
+    filterCommitsByType(activeTypeFilter);
+
+    if (searchQuery) {
+        performSearch(searchQuery);
+    }
 }
 
 function createCommitHTML(commit, repoUrl) {
@@ -1015,7 +1345,7 @@ function createCommitHTML(commit, repoUrl) {
     ).join('') : '';
     
     return `
-        <li class="${commitClass}${tagClass}" data-target="${bodyId}" data-commit-type="${typeKey}" data-commit-hash="${commit.hash}">
+        <li class="${commitClass}${tagClass}" data-target="${bodyId}" data-commit-type="${typeKey}" data-commit-hash="${commit.hash}" data-commit-day="${getUTCDateKeyFromTimestamp(commit.timestamp)}">
             <div class="commit-header">
                 <div class="commit-header-left">
                     <a href="${commitUrl}" target="_blank" class="commit-hash" title="${commit.hash}">
@@ -1134,9 +1464,12 @@ function performSearch(query) {
         document.querySelectorAll('.release-section').forEach(el => {
             el.classList.remove('search-hidden');
         });
+
+        updateReleaseVisibilityByActiveFilters();
         
         searchInfo.textContent = '';
         searchInfo.classList.remove('has-results');
+        updateFilterStatusBar();
         return;
     }
     
@@ -1170,16 +1503,7 @@ function performSearch(query) {
     });
     
     // Handle release sections in "By Release" mode
-    if (currentViewMode === 'release') {
-        document.querySelectorAll('.release-section').forEach(releaseEl => {
-            const visibleCommits = releaseEl.querySelectorAll('.commit-item:not(.search-hidden)');
-            if (visibleCommits.length === 0) {
-                releaseEl.classList.add('search-hidden');
-            } else {
-                releaseEl.classList.remove('search-hidden');
-            }
-        });
-    }
+    updateReleaseVisibilityByActiveFilters();
     
     // Update search info
     if (matchCount === 0) {
@@ -1189,6 +1513,8 @@ function performSearch(query) {
         searchInfo.textContent = `Found ${matchCount} commit${matchCount === 1 ? '' : 's'}`;
         searchInfo.classList.add('has-results');
     }
+
+    updateFilterStatusBar();
 }
 
 function findCommitByHash(hash) {

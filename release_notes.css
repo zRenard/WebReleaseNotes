@@ -157,22 +157,337 @@ h1 {
 }
 
 .summary-top {
-    display: grid;
-    grid-template-columns: 300px 1fr;
+    display: flex;
+    flex-wrap: nowrap;
     gap: 16px;
-    align-items: center;
+    align-items: stretch;
 }
 
-@media (width <= 768px) {
+@media (width <= 900px) {
     .summary-top {
-        grid-template-columns: 1fr;
+        flex-wrap: wrap;
+    }
+
+    .summary-top .commit-calendar-widget {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .summary-top .summary-card.total {
+        flex: 0 0 auto;
+    }
+
+    .summary-top .summary-right-column {
+        flex: 1 1 100%;
+    }
+
+    .summary-right-column .view-controls {
+        width: 100%;
+    }
+
+    .summary-top-main {
+        flex-direction: column;
     }
 }
 
-.summary-categories {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+.summary-top .commit-calendar-widget {
+    flex: 0 0 280px;
+    width: 280px;
+    max-width: 100%;
+}
+
+.summary-top .summary-card.total {
+    flex: 0 0 240px;
+    width: 240px;
+    height: fit-content;
+}
+
+.summary-right-column {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-top-main {
+    display: flex;
     gap: 12px;
+    align-items: flex-start;
+}
+
+#summary-view-controls-slot {
+    display: contents;
+}
+
+.summary-right-column .view-controls {
+    margin: 0;
+}
+
+.summary-right-column .release-selector {
+    margin-left: 0;
+}
+
+.summary-body {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.summary-body .commit-timeline {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+}
+
+.summary-categories {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: flex-start;
+}
+
+.summary-controls {
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    background: #fff;
+    padding: 6px;
+}
+
+.commit-calendar-widget {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.commit-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.commit-calendar-title {
+    font-size: 0.86em;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #57606a;
+    margin: 0;
+}
+
+.commit-calendar-subtitle {
+    font-size: 0.72em;
+    color: #6b7280;
+    margin: 0;
+}
+
+.commit-calendar-months {
+    display: block;
+}
+
+.commit-calendar-month {
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 6px;
+    background: #f8fafc;
+}
+
+.commit-calendar-month-title {
+    margin: 0;
+    font-size: 0.82em;
+    color: #334155;
+    text-align: center;
+}
+
+.commit-calendar-toolbar {
+    display: grid;
+    grid-template-columns: 28px 1fr 28px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.commit-calendar-nav {
+    height: 26px;
+    border: 1px solid #d0d7de;
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #334155;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+
+.commit-calendar-nav:hover:not(:disabled) {
+    background: #f3f4f6;
+}
+
+.commit-calendar-nav:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.commit-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    margin-bottom: 2px;
+}
+
+.commit-calendar-weekdays span {
+    text-align: center;
+    font-size: 0.62em;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.commit-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+}
+
+.commit-calendar-day {
+    min-height: 34px;
+    border: 1px solid #dbe3ec;
+    border-radius: 5px;
+    padding: 2px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-family: inherit;
+}
+
+.commit-calendar-day.empty {
+    border: 0;
+    background: transparent;
+}
+
+.calendar-day-number {
+    font-size: 0.64em;
+    color: #667085;
+    line-height: 1;
+}
+
+.calendar-day-icon {
+    font-size: 0.78em;
+    line-height: 1;
+}
+
+.calendar-day-count {
+    font-size: 0.64em;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.commit-calendar-day.has-commits {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+}
+
+.commit-calendar-day.has-commits:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 2px 5px rgba(15, 23, 42, 0.15);
+}
+
+.commit-calendar-day.selected {
+    box-shadow: 0 0 0 2px #111827, inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+.commit-calendar-day.today {
+    outline: 2px solid #22c55e;
+    outline-offset: -2px;
+}
+
+.commit-calendar-day.today .calendar-day-number {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.commit-calendar-day.today:not(.has-commits) {
+    background: #f0fdf4;
+}
+
+.commit-calendar-actions {
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.commit-calendar-clear {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.74em;
+    color: #334155;
+}
+
+.commit-calendar-clear:hover {
+    background: #f3f4f6;
+}
+
+.commit-item.day-filter-hidden {
+    display: none !important;
+}
+
+.commit-calendar-day.type-feat {
+    background: #e6f7ea;
+    border-color: #2da44e;
+}
+
+.commit-calendar-day.type-fix {
+    background: #ffe6e9;
+    border-color: #cf222e;
+}
+
+.commit-calendar-day.type-docs {
+    background: #e6f2ff;
+    border-color: #0969da;
+}
+
+.commit-calendar-day.type-style {
+    background: #f3e5f5;
+    border-color: #8e24aa;
+}
+
+.commit-calendar-day.type-refactor {
+    background: #e0f7fa;
+    border-color: #00acc1;
+}
+
+.commit-calendar-day.type-test {
+    background: #f1f8e9;
+    border-color: #7cb342;
+}
+
+.commit-calendar-day.type-perf {
+    background: #fffde7;
+    border-color: #fbc02d;
+}
+
+.commit-calendar-day.type-ops {
+    background: #eceff1;
+    border-color: #546e7a;
+}
+
+.commit-calendar-day.type-chore {
+    background: #fff4e6;
+    border-color: #fb8500;
+}
+
+.commit-calendar-day.type-other {
+    background: #f0f0f0;
+    border-color: #656d76;
 }
 
 .summary-card {
@@ -1425,6 +1740,15 @@ h1 {
 
 /* Responsive Design */
 @media (width <= 768px) {
+    .commit-calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .commit-calendar-months {
+        grid-template-columns: 1fr;
+    }
+
     .view-controls {
         flex-direction: column;
         align-items: stretch;
@@ -1591,6 +1915,75 @@ h1 {
     transform: translateY(-1px);
 }
 
+/* Filter Status Bar */
+.filter-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f0f5ff;
+    border: 1px solid #c5d4f5;
+    border-radius: 8px;
+    font-size: 0.85em;
+}
+
+.filter-status-label {
+    font-weight: 600;
+    color: #57606a;
+    white-space: nowrap;
+    margin-right: 4px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #c5d4f5;
+    background: #fff;
+    font-weight: 500;
+    color: #24292f;
+    white-space: nowrap;
+}
+
+.filter-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    line-height: 1;
+    padding: 0 2px;
+    color: inherit;
+    opacity: 0.6;
+    border-radius: 50%;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.filter-chip-remove:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+/* Chip colors matching category cards */
+.filter-chip.type-feat   { background: #e6f7ea; border-color: #2da44e; color: #1a6630; }
+.filter-chip.type-fix    { background: #ffe6e9; border-color: #cf222e; color: #8b1a21; }
+.filter-chip.type-docs   { background: #e6f2ff; border-color: #0969da; color: #0550a0; }
+.filter-chip.type-style  { background: #f3e5f5; border-color: #8e24aa; color: #5e1171; }
+.filter-chip.type-refactor { background: #e0f7fa; border-color: #00acc1; color: #006573; }
+.filter-chip.type-test   { background: #f1f8e9; border-color: #7cb342; color: #456820; }
+.filter-chip.type-perf   { background: #fffde7; border-color: #fbc02d; color: #7a5c00; }
+.filter-chip.type-ops    { background: #eceff1; border-color: #546e7a; color: #2e404a; }
+.filter-chip.type-chore  { background: #fff4e6; border-color: #fb8500; color: #7c4200; }
+.filter-chip.type-other  { background: #f0f0f0; border-color: #656d76; color: #3a3e44; }
+.filter-chip.type-tags   { background: #e6f2ff; border-color: #2c5282; color: #1a3358; }
+.filter-chip.filter-chip-day    { background: #f0fdf4; border-color: #16a34a; color: #14532d; }
+.filter-chip.filter-chip-search { background: #fdf4ff; border-color: #9333ea; color: #581c87; }
+
 /* Dark Theme */
 body.theme-dark {
     background: linear-gradient(135deg, #0b0f14 0%, #1b2330 100%);
@@ -1720,6 +2113,74 @@ body.theme-dark .summary-card:not(.total) .number {
 }
 
 body.theme-dark .summary-card:not(.total) .label {
+    color: #cbd5e1;
+}
+
+body.theme-dark .commit-calendar-widget {
+    background: #0f131a;
+    border-color: #2a3442;
+}
+
+body.theme-dark .summary-controls {
+    background: #0f131a;
+    border-color: #2a3442;
+}
+
+body.theme-dark .commit-calendar-title {
+    color: #cbd5e1;
+}
+
+body.theme-dark .commit-calendar-subtitle,
+body.theme-dark .commit-calendar-weekdays span {
+    color: #9aa4b2;
+}
+
+body.theme-dark .commit-calendar-month {
+    background: #151b24;
+    border-color: #2a3442;
+}
+
+body.theme-dark .commit-calendar-nav,
+body.theme-dark .commit-calendar-clear {
+    background: #0f131a;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+
+body.theme-dark .commit-calendar-nav:hover:not(:disabled),
+body.theme-dark .commit-calendar-clear:hover {
+    background: #1b2330;
+}
+
+body.theme-dark .commit-calendar-month-title,
+body.theme-dark .calendar-day-count {
+    color: #e2e8f0;
+}
+
+body.theme-dark .commit-calendar-day {
+    background: #0f131a;
+    border-color: #334155;
+}
+
+body.theme-dark .commit-calendar-day.selected {
+    box-shadow: 0 0 0 2px #60a5fa, inset 0 0 0 1px rgba(15, 19, 26, 0.7);
+}
+
+body.theme-dark .commit-calendar-day.today {
+    outline: 2px solid #4ade80;
+    outline-offset: -2px;
+}
+
+body.theme-dark .commit-calendar-day.today .calendar-day-number {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+body.theme-dark .commit-calendar-day.today:not(.has-commits) {
+    background: #052e16;
+}
+
+body.theme-dark .calendar-day-number {
     color: #cbd5e1;
 }
 
@@ -1856,4 +2317,35 @@ body.theme-dark .download-link {
 body.theme-dark .download-link:hover {
     background: #243043;
     border-color: #3a475a;
+}
+
+body.theme-dark .filter-status-bar {
+    background: #151b24;
+    border-color: #2a3442;
+}
+
+body.theme-dark .filter-status-label {
+    color: #9aa4b2;
+}
+
+body.theme-dark .filter-chip {
+    background: #0f131a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+body.theme-dark .filter-chip.filter-chip-day {
+    background: #0a1f14;
+    border-color: #166534;
+    color: #86efac;
+}
+
+body.theme-dark .filter-chip.filter-chip-search {
+    background: #1a0a2e;
+    border-color: #7e22ce;
+    color: #d8b4fe;
+}
+
+body.theme-dark .filter-chip-remove:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
