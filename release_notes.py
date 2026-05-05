@@ -236,11 +236,15 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
         latest_release_only: Only include latest release in markdown
         include_timeline: Include timeline visualization in markdown
     """
-    print(f"[*] Extracting {num_commits} commits from branch '{branch}'...")
+    resolved_repo_path = str(Path(repo_path).resolve())
+    print(f"Analyzing repository: {resolved_repo_path}")
+    print(f"Branch: {branch}")
+    print(f"Processing {num_commits} commits...")
     
     commits = get_repository_commits(repo_path, num_commits, branch,exclude_title_patterns=exclude_title_patterns,
         exclude_author_patterns=exclude_author_patterns,
         exclude_message_patterns=exclude_message_patterns)
+    print(f"Commits found: {len(commits)}")
     
     # Get repository info
     repo = git.Repo(repo_path)
@@ -277,14 +281,28 @@ def export_release_notes(repo_path, num_commits, output_path, branch='main', mar
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(release_data, f, indent=2, ensure_ascii=False)
     
-    print(f"[OK] Exported {len(commits)} commits to {output_path}")
+    # Show release tags discovered in the exported commit set (newest to oldest).
+    found_tags = []
+    for commit in commits:
+        for tag in commit.get('tags', []):
+            if is_release_version(tag) and tag not in found_tags:
+                found_tags.append(tag)
+
+    if found_tags:
+        print(f"Found release tags: {', '.join(found_tags)}")
+    else:
+        print("Found release tags: none")
+
+    print(f"Output written to: {output_path}")
     
     # Generate markdown file if requested
     if markdown_path:
         markdown_content = generate_markdown(release_data, latest_release_only=latest_release_only, include_timeline=include_timeline)
         with open(markdown_path, 'w', encoding='utf-8') as f:
             f.write(markdown_content)
-        print(f"[OK] Generated markdown file: {markdown_path}")
+        print(f"Markdown written to: {markdown_path}")
+
+    print("Done ✓")
     
     return release_data
 
@@ -867,7 +885,7 @@ def main():
         type=str,
         nargs='?',
         const='RELEASE_NOTES.md',
-        default='RELEASE_NOTES.md',
+        default=None,
         help='Optional output markdown file path (e.g., RELEASE_NOTES.md). If provided without a value, uses the default.'
     )
 
