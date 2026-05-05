@@ -18,9 +18,9 @@ https://zrenard.github.io/WebReleaseNotes/
 - 🚀 **Auto-classification**: Automatically categorizes commits using conventional commit standards
 - 🌐 **GitHub Integration**: Direct links to commits and repository
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
-- 📝 **Markdown Export**: Generate formatted markdown release notes alongside JSON output
-- 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in markdown output
-- ☀️/🌙 **Light/Dark themes**: Switch between dark and light theme
+- 📝 **Markdown Export**: Generate formatted Markdown release notes alongside JSON output
+- 🗓️ **Timeline Visualization**: Optional ASCII timeline with date grouping and commit types in Markdown output
+- ☀️/🌙 **Light/Dark themes**: Switch between dark and light themes
 
 ## Description
 
@@ -59,7 +59,7 @@ The tool automatically classifies commits into categories (features, bug fixes, 
 3. **Install Node.js dependencies**:
 
    ```bash
-   npm install stylelint-config-standard
+   npm install
    ```
 
 4. **Create a tag in your repository** (optional, for testing release grouping):
@@ -98,17 +98,31 @@ The tool automatically classifies commits into categories (features, bug fixes, 
    python release_notes.py --num_commits 50 --output release_notes.json
    ```
 
+   Example output:
+
+   ```text
+   Analyzing repository: /path/to/WebReleaseNotes
+   Branch: main
+   Processing 50 commits...
+   Commits found: 50
+   Found release tags: v1.2.0, v1.1.0, v1.0.0
+   Output written to: release_notes.json
+   Done ✓
+   ```
+
    Options:
    - `--num_commits N`: Number of commits to include (default: 10)
    - `--output FILE`: Output JSON file path (default: release_notes.json)
-   - `--markdown FILE`: Optional markdown file path (e.g., RELEASE_NOTES.md)
-   - `--md_timeline`: Include timeline visualization in markdown output (default: False)
-   - `--md_latest_release_only`: Generate markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
+   - `--markdown [FILE]`: Optional Markdown file path (e.g., RELEASE_NOTES.md). If the flag is provided without a value, `RELEASE_NOTES.md` is used.
+   - `--md_timeline`: Include timeline visualization in Markdown output (default: False)
+   - `--md_latest_release_only`: Generate Markdown only for the latest tagged release (ignores Incoming and older releases). If no tags are found, output remains unchanged.
    - `--repo_path PATH`: Path to the repository (default: current directory)
    - `--branch BRANCH`: Branch to analyze (default: main)
    - `--exclude_title REGEX`: Exclude commits whose title matches the regex (repeatable)
    - `--exclude_author REGEX`: Exclude commits whose author matches the regex (repeatable)
    - `--exclude_message REGEX`: Exclude commits whose full message matches the regex (repeatable)
+
+   Note: Markdown output is generated only when `--markdown` is specified.
 
 ## Testing
 
@@ -122,7 +136,7 @@ npm run dev
 node server.js
 ```
 
-Visit `http://localhost:3000` in your browser.
+Visit `http://localhost:3000/release_notes.html` in your browser.
 
 #### CSP rules
 
@@ -134,7 +148,7 @@ Validate that the CSP headers are correctly set by checking the browser's develo
 Run the complete validation pipeline:
 
 ```bash
-./local.sh
+npm run build
 ```
 
 This script performs:
@@ -155,7 +169,7 @@ Output files are created in the `out/` directory.
 1. **Generate production files**:
 
    ```bash
-   ./local.sh
+   npm run build
    ```
 
 2. **Copy output files** from `out/` directory to your GitHub Pages branch or deployment folder:
@@ -182,7 +196,7 @@ For any static web server (Apache, Nginx, etc.):
 1. **Build production files**:
 
    ```bash
-   ./local.sh
+   npm run build
    ```
 
 2. **Copy files** from `out/` directory to your web server's document root:
@@ -196,6 +210,13 @@ For any static web server (Apache, Nginx, etc.):
    ```bash
    python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
    ```
+4. **Validate**:
+
+   ```bash
+   npm run prod
+   ```
+   
+   Validate the generated release notes in the browser by navigating to the appropriate URL (e.g., `http://localhost:3000/release_notes.html`).
 
 ### Automated Deployment
 
@@ -204,27 +225,30 @@ For CI/CD pipelines, add these steps to your workflow:
 ```yaml
 # Example GitHub Actions workflow
 - name: 🚚 Get latest code
-   uses: actions/checkout@v6
-   with:
-      # NOTICE : You must use this option to get all tags for release detection
-      fetch-depth: 0
-- name: Generate Release Notes
+  uses: actions/checkout@v6
+  with:
+    # Required to fetch all tags for release detection
+    fetch-depth: 0
+- name: Generate release notes
   run: |
     python release_notes.py --num_commits 50 --output release_notes.json --markdown RELEASE_NOTES.md
 
-# You may need to set up Node.js environment here and run directly minifiyer or
-# use directly the compressed version
-# (Section simplifyed for brevity)
+# You may need to set up a Node.js environment and run the build step.
+# (Section simplified for brevity)
 - name: Build and Validate
   run: |
-    chmod +x local.sh
-    ./local.sh
+    npm run build
+
+- name: Setup GitHub Pages
+  uses: actions/configure-pages@v6
+
+- name: Upload Pages artifact
+  uses: actions/upload-pages-artifact@v5
+  with:
+    path: ./out
 
 - name: Deploy to GitHub Pages
-  uses: peaceiris/actions-gh-pages@v3
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    publish_dir: ./out
+  uses: actions/deploy-pages@v5
 ```
 
 ## Usage
@@ -243,11 +267,13 @@ For CI/CD pipelines, add these steps to your workflow:
 
 ### Release Tags
 
-The tool automatically detects **SemVer** tags (e.g., `1.0.0`, `2.1.3`) and tags starting with `v` or `V` (e.g., `v1.0.0`, `V2.1.3`) then groups commits accordingly. **Pre-release tags** (e.g., `1.0.0-alpha`, `1.0.0-rc.1`) are ignored. Commits before the first tag are grouped into an "Incoming" virtual release.
+The tool automatically detects release tags in `vMAJOR.MINOR.PATCH` or `VMAJOR.MINOR.PATCH` format (e.g., `v1.0.0`, `V2.1.3`) and groups commits accordingly. **Pre-release tags** (e.g., `v1.0.0-alpha`, `v1.0.0-rc.1`) are ignored. Commits before the first tag are grouped into an "Incoming" virtual release.
+
+Tags are attached only to the exact commit they point to. If a tagged commit is older than your `--num_commits` window, increase `--num_commits`.
 
 ### Markdown Output
 
-When using the `--markdown` option, the script generates a formatted markdown file:
+When using the `--markdown` option, the script generates a formatted Markdown file:
 
 - **With Release Tags**: Structures the markdown by releases (matching the HTML "By Release" view)
   - Each release section shows commit count, date range, and category summary
@@ -271,20 +297,20 @@ The timeline visualization features:
 Example usage:
 
 ```bash
-# Generate both JSON and markdown
-python release_notes.py --markdown RELEASE_NOTES.md --num_commits 50
+# Generate both JSON and Markdown
+python release_notes.py --num_commits 50 --markdown RELEASE_NOTES.md
 
-# Generate markdown with timeline visualization
-python release_notes.py --markdown RELEASE_NOTES.md --md_timeline --num_commits 50
+# Generate Markdown with timeline visualization
+python release_notes.py --num_commits 50 --markdown RELEASE_NOTES.md --md_timeline
 
 # Generate only latest release with timeline
-python release_notes.py --markdown RELEASE_NOTES.md --md_timeline --md_latest_release_only --num_commits 50
+python release_notes.py --num_commits 50 --markdown RELEASE_NOTES.md --md_timeline --md_latest_release_only
 
 # Analyze a different repository
-python release_notes.py --repo_path ../my-project --markdown RELEASE_NOTES.md
+python release_notes.py --num_commits 50 --output release_notes.json --repo_path ../my-project --markdown RELEASE_NOTES.md
 
 # Use a specific branch
-python release_notes.py --branch develop --markdown RELEASE_NOTES.md
+python release_notes.py --num_commits 50 --output release_notes.json --branch develop --markdown RELEASE_NOTES.md
 ```
 
 ## Project Structure
