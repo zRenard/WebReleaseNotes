@@ -37,11 +37,16 @@ function isReleaseVersionTag(tag) {
 let currentViewMode = 'commit'; // 'commit' or 'release'
 let globalData = null; // Store data globally for mode switching
 let releases = []; // Store aggregated releases
-let activeTypeFilter = 'all';
+let activeTypeFilters = new Set(['all']); // multi-type filter (F6)
+let activeHashFilter = ''; // single-commit filter from timeline (F9)
+let activeAuthorFilter = ''; // author filter (F7)
 let selectedDayFilter = '';
 let calendarVisibleMonth = null;
 let lastSummaryData = null;
 let lastSummaryCommits = null;
+let summaryScopeCommits = null;
+let globalSummary = null;
+let globalCommits = null;
 
 const THEME_STORAGE_KEY = 'releaseNotesTheme';
 
@@ -58,13 +63,7 @@ function applyTheme(theme) {
 
 function updateThemeToggleLabel(button, theme) {
     if (!button) return;
-    if (theme === 'dark') {
-        button.textContent = '☀️';
-        button.title = 'Switch to light theme';
-    } else {
-        button.textContent = '🌙';
-        button.title = 'Switch to dark theme';
-    }
+    button.title = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
 }
 
 function setupThemeToggle() {
@@ -143,7 +142,9 @@ async function loadReleaseNotes() {
         
         displayMetadata(data);
         displayCommits(data);
-        
+        populateAuthorFilter(data.commits);
+        setupKeyboardShortcuts();
+
         // Initialize search after commits are displayed
         setTimeout(() => {
             initSearch();
@@ -359,10 +360,12 @@ function displayReleaseView(selectedReleaseTag) {
             .filter(([, commits]) => commits.length > 0)
             .map(([type, commits]) => {
                 const typeInfo = TYPE_LABELS[type] || { label: type, icon: '📦' };
-                return `<span class="release-category-badge ${type}">${typeInfo.icon} ${typeInfo.label}: ${commits.length}</span>`;
+                return `<span class="release-category-badge ${type}" data-type="${type}">${typeInfo.icon} ${typeInfo.label}: ${commits.length}</span>`;
             })
             .join('');
-        
+
+        const barChart = buildReleaseBarChart(grouped, release.commitCount);
+
         return `
             <div class="release-section ${release.isVirtual ? 'virtual-release' : ''}" data-release-tag="${escapeHtml(release.tag)}">
                 <div class="release-header">
@@ -372,6 +375,7 @@ function displayReleaseView(selectedReleaseTag) {
                         <span class="release-date-range">📅 ${release.startDate} to ${release.endDate}</span>
                     </div>
                 </div>
+                ${barChart}
                 <div class="release-summary">
                     ${categorySummary}
                 </div>
@@ -383,17 +387,26 @@ function displayReleaseView(selectedReleaseTag) {
     }).join('');
     
     container.innerHTML = releaseHTML;
+
+    // Apply grid-template-columns via JS DOM (inline style attr blocked by CSP)
+    container.querySelectorAll('.release-bar-chart[data-grid-cols]').forEach(chart => {
+        chart.style.gridTemplateColumns = chart.dataset.gridCols;
+    });
+
     setupToggleHandlers();
-    
+    setupReleaseTypeFilters(container);
+
     // Add click handlers to release panels
     const releasePanels = container.querySelectorAll('.release-section');
     releasePanels.forEach(panel => {
         panel.addEventListener('click', (e) => {
-            // Don't trigger if clicking on links, interactive elements, or commit items
-            if (e.target.tagName === 'A' || 
-                e.target.closest('a') || 
+            // Don't trigger if clicking on links, interactive elements, commit items, or type filters
+            if (e.target.tagName === 'A' ||
+                e.target.closest('a') ||
                 e.target.closest('.commit-item') ||
-                e.target.classList.contains('commit-item')) {
+                e.target.classList.contains('commit-item') ||
+                e.target.closest('.release-category-badge') ||
+                e.target.closest('.release-bar-segment')) {
                 return;
             }
             
@@ -410,20 +423,105 @@ function displayReleaseView(selectedReleaseTag) {
 }
 
 function updateSummaryForReleaseView(releasesToDisplay) {
-    const totalCommits = releasesToDisplay.reduce((sum, r) => sum + r.commitCount, 0);
-    
-    // Aggregate counts by type
-    const aggregated = { feat: 0, fix: 0, docs: 0, style: 0, refactor: 0, test: 0, perf: 0, ops: 0, chore: 0, other: 0, total: totalCommits };
-    releasesToDisplay.forEach(release => {
-        release.commits.forEach(c => {
-            const t = (c.type || 'other').toLowerCase();
-            if (aggregated[t] !== undefined) {
-                aggregated[t]++;
-            }
+    if (!globalCommits) return;
+
+    // All releases selected: use commit scope unchanged
+    if (!releasesToDisplay || releasesToDisplay.length === releases.length) {
+        summaryScopeCommits = globalCommits;
+        refreshSummaryForActiveFilters();
+        return;
+    }
+
+    // Specific release(s): use a filtered commit scope
+    summaryScopeCommits = releasesToDisplay.flatMap(r => r.commits);
+    refreshSummaryForActiveFilters();
+}
+
+function buildSummaryFromCommits(commits) {
+    const grouped = { feat: 0, fix: 0, docs: 0, style: 0, refactor: 0, test: 0, perf: 0, ops: 0, chore: 0, other: 0 };
+    const list = Array.isArray(commits) ? commits : [];
+
+    list.forEach(commit => {
+        const type = (commit.type || 'other').toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(grouped, type)) {
+            grouped[type] += 1;
+        } else {
+            grouped.other += 1;
+        }
+    });
+
+    return {
+        total: list.length,
+        ...grouped
+    };
+}
+
+function getAuthorScopedCommits(commits) {
+    const list = Array.isArray(commits) ? commits : [];
+    if (!activeAuthorFilter) return list;
+    return list.filter(c => c.author === activeAuthorFilter);
+}
+
+function refreshSummaryForActiveFilters() {
+    const scopeCommits = summaryScopeCommits || globalCommits || [];
+    const commitsToDisplay = getAuthorScopedCommits(scopeCommits);
+    const summary = buildSummaryFromCommits(commitsToDisplay);
+    displaySummary(summary, commitsToDisplay);
+}
+
+function buildReleaseBarChart(grouped, totalCount) {
+    const typeEntries = Object.entries(grouped)
+        .filter(([, commits]) => commits.length > 0);
+
+    if (typeEntries.length === 0) return '';
+
+    const gridCols = typeEntries.map(([, commits]) => commits.length + 'fr').join(' ');
+
+    const segments = typeEntries.map(([type, commits]) => {
+        const typeInfo = TYPE_LABELS[type] || { label: type, icon: '📦' };
+        const pct = Math.round(commits.length / totalCount * 100);
+        return `<div class="release-bar-segment type-${type}" data-type="${type}" title="${typeInfo.icon} ${typeInfo.label}: ${commits.length} (${pct}%)"><span class="release-bar-segment-label">${typeInfo.icon} ${commits.length} · ${pct}%</span></div>`;
+    }).join('');
+
+    // grid-template-columns is applied via JS after DOM insertion (CSP blocks inline styles)
+    return `<div class="release-bar-chart" data-grid-cols="${gridCols}" aria-label="Commit type distribution">${segments}</div>`;
+}
+
+function setupReleaseTypeFilters(container) {
+    container.querySelectorAll('.release-section').forEach(section => {
+        let activeType = null;
+
+        function applyFilter(type) {
+            activeType = type;
+
+            section.querySelectorAll('.commit-item').forEach(commit => {
+                commit.classList.toggle('release-filter-hidden', !!type && commit.dataset.commitType !== type);
+            });
+
+            section.querySelectorAll('.release-category-badge[data-type]').forEach(badge => {
+                badge.classList.toggle('release-filter-active', badge.dataset.type === type);
+                badge.classList.toggle('release-filter-dimmed', !!type && badge.dataset.type !== type);
+            });
+
+            section.querySelectorAll('.release-bar-segment[data-type]').forEach(seg => {
+                seg.classList.toggle('release-filter-active', seg.dataset.type === type);
+                seg.classList.toggle('release-filter-dimmed', !!type && seg.dataset.type !== type);
+            });
+        }
+
+        function handleTypeClick(e, type) {
+            e.stopPropagation();
+            applyFilter(activeType === type ? null : type);
+        }
+
+        section.querySelectorAll('.release-category-badge[data-type]').forEach(badge => {
+            badge.addEventListener('click', e => handleTypeClick(e, badge.dataset.type));
+        });
+
+        section.querySelectorAll('.release-bar-segment[data-type]').forEach(seg => {
+            seg.addEventListener('click', e => handleTypeClick(e, seg.dataset.type));
         });
     });
-    
-    displaySummary(aggregated, releasesToDisplay.flatMap(r => r.commits));
 }
 
 function displaySummary(summary, commits) {
@@ -484,33 +582,32 @@ function displaySummary(summary, commits) {
     // Build category cards for types with counts > 0
     const categoryCards = [];
 
-    // Add an explicit "All" category to reset any active filters
+    // "All" card — resets filters
     categoryCards.push(`
-        <div class="summary-card all ${activeTypeFilter === 'all' ? 'active' : ''}" data-type="all">
+        <div class="summary-card all ${activeTypeFilters.has('all') ? 'active' : ''}" data-type="all">
             <span class="icon">🔄</span>
             <span class="number">${summary.total}</span>
             <span class="label">All</span>
         </div>
     `);
-    
-    // Add Tags category card first if there are tagged commits
+
     if (taggedCommitsCount > 0) {
         categoryCards.push(`
-            <div class="summary-card tags ${activeTypeFilter === 'tags' ? 'active' : ''}" data-type="tags">
+            <div class="summary-card tags ${activeTypeFilters.has('tags') ? 'active' : ''}" data-type="tags">
                 <span class="icon">🏷️</span>
                 <span class="number">${taggedCommitsCount}</span>
                 <span class="label">Tags</span>
             </div>
         `);
     }
-    
+
     allKeys.forEach(key => {
         if (key !== 'total') {
             const value = summary[key];
             if (value && value > 0) {
                 const typeInfo = TYPE_LABELS[key] || { label: key, icon: '📦' };
                 categoryCards.push(`
-                    <div class="summary-card ${key} ${activeTypeFilter === key ? 'active' : ''}" data-type="${key}">
+                    <div class="summary-card ${key} ${activeTypeFilters.has(key) ? 'active' : ''}" data-type="${key}">
                         <span class="icon">${typeInfo.icon}</span>
                         <span class="number">${value}</span>
                         <span class="label">${typeInfo.label}</span>
@@ -538,21 +635,19 @@ function displaySummary(summary, commits) {
         </div>
     `;
     
-    // Add click handlers for filtering
+    // Click = single-select, Ctrl+click = multi-select (F6)
     document.querySelectorAll('.summary-card').forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
             const filterType = this.dataset.type;
-            filterCommitsByType(filterType);
-            
-            // Collapse all commits when showing all
-            if (filterType === 'all') {
-                collapseAllCommits();
+            if (e.ctrlKey || e.metaKey) {
+                if (filterType !== 'all') {
+                    toggleTypeFilter(filterType);
+                }
+            } else {
+                filterCommitsByType(filterType);
+                if (filterType === 'all') collapseAllCommits();
             }
-
-            // Re-render summary so calendar also reflects the active category filter
             displaySummary(summary, commits);
-
-            // Deactivate timeline dots
             document.querySelectorAll('.timeline-commit, .timeline-tag').forEach(d => d.classList.remove('active'));
         });
     });
@@ -563,7 +658,7 @@ function displaySummary(summary, commits) {
     }
 
     setupCalendarWidgetHandlers(summary, commits);
-    filterCommitsByType(activeTypeFilter);
+    applyTypeFilter();
 }
 
 function updateFilterStatusBar() {
@@ -572,20 +667,43 @@ function updateFilterStatusBar() {
 
     const chips = [];
 
-    if (activeTypeFilter !== 'all') {
-        const typeInfo = activeTypeFilter === 'tags'
-            ? { label: 'Tags', icon: '🏷️' }
-            : (TYPE_LABELS[activeTypeFilter] || { label: activeTypeFilter, icon: '📦' });
-        chips.push(`<span class="filter-chip type-${activeTypeFilter}" data-remove-filter="type">${typeInfo.icon} ${typeInfo.label}<button class="filter-chip-remove" title="Remove category filter">✕</button></span>`);
+    // Type filter chips (one per active type, supports multi-select)
+    if (!activeTypeFilters.has('all')) {
+        activeTypeFilters.forEach(type => {
+            const typeInfo = type === 'tags'
+                ? { label: 'Tags', icon: '🏷️' }
+                : (TYPE_LABELS[type] || { label: type, icon: '📦' });
+            chips.push(`<span class="filter-chip type-${type}" data-remove-filter="type" data-remove-type="${type}">${typeInfo.icon} ${typeInfo.label}<button class="filter-chip-remove" title="Remove filter">✕</button></span>`);
+        });
+    }
+
+    if (activeHashFilter) {
+        chips.push(`<span class="filter-chip filter-chip-search" data-remove-filter="hash">🔗 commit ${activeHashFilter.slice(0, 7)}<button class="filter-chip-remove" title="Show all commits">✕</button></span>`);
     }
 
     if (selectedDayFilter) {
         chips.push(`<span class="filter-chip filter-chip-day" data-remove-filter="day">📅 ${selectedDayFilter}<button class="filter-chip-remove" title="Remove day filter">✕</button></span>`);
     }
 
+    if (activeAuthorFilter) {
+        chips.push(`<span class="filter-chip filter-chip-day" data-remove-filter="author">👤 ${escapeHtml(activeAuthorFilter)}<button class="filter-chip-remove" title="Remove author filter">✕</button></span>`);
+    }
+
     if (searchQuery) {
         chips.push(`<span class="filter-chip filter-chip-search" data-remove-filter="search">🔍 &quot;${escapeHtml(searchQuery)}&quot;<button class="filter-chip-remove" title="Remove search filter">✕</button></span>`);
     }
+
+    // Visible count (F3)
+    const totalCount = allCommitElements.length;
+    const visibleCount = allCommitElements.filter(el =>
+        !el.classList.contains('hidden') &&
+        !el.classList.contains('search-hidden') &&
+        !el.classList.contains('day-filter-hidden') &&
+        !el.classList.contains('author-filter-hidden')
+    ).length;
+    const countChip = chips.length > 0 && visibleCount < totalCount
+        ? `<span class="visible-count-chip">${visibleCount} / ${totalCount} commits</span>`
+        : '';
 
     if (chips.length === 0) {
         bar.classList.add('hidden');
@@ -594,17 +712,22 @@ function updateFilterStatusBar() {
     }
 
     bar.classList.remove('hidden');
-    bar.innerHTML = `<span class="filter-status-label">Active filters:</span>${chips.join('')}`;
+    bar.innerHTML = `<span class="filter-status-label">Active filters:</span>${chips.join('')}${countChip}`;
 
     bar.querySelectorAll('[data-remove-filter]').forEach(chip => {
         chip.querySelector('.filter-chip-remove').addEventListener('click', e => {
             e.stopPropagation();
             const filter = chip.dataset.removeFilter;
             if (filter === 'type') {
+                const typeToRemove = chip.dataset.removeType;
+                activeTypeFilters.delete(typeToRemove);
+                if (activeTypeFilters.size === 0) activeTypeFilters.add('all');
+                applyTypeFilter();
+                if (lastSummaryData && lastSummaryCommits) displaySummary(lastSummaryData, lastSummaryCommits);
+            } else if (filter === 'hash') {
+                activeHashFilter = '';
                 filterCommitsByType('all');
-                if (lastSummaryData && lastSummaryCommits) {
-                    displaySummary(lastSummaryData, lastSummaryCommits);
-                }
+                if (lastSummaryData && lastSummaryCommits) displaySummary(lastSummaryData, lastSummaryCommits);
             } else if (filter === 'day') {
                 selectedDayFilter = '';
                 if (lastSummaryData && lastSummaryCommits) {
@@ -612,6 +735,11 @@ function updateFilterStatusBar() {
                 } else {
                     applyDayFilterToCommits();
                 }
+            } else if (filter === 'author') {
+                activeAuthorFilter = '';
+                const sel = document.getElementById('author-dropdown');
+                if (sel) sel.value = '';
+                applyAuthorFilter();
             } else if (filter === 'search') {
                 searchQuery = '';
                 const input = document.getElementById('search-input');
@@ -626,15 +754,10 @@ function updateFilterStatusBar() {
 }
 
 function getCommitsForActiveTypeFilter(commits) {
-    if (!Array.isArray(commits) || commits.length === 0) {
-        return [];
-    }
-
-    if (activeTypeFilter === 'tags') {
-        return commits.filter(c => c.tags && c.tags.length > 0);
-    }
-
-    return commits.filter(c => (c.type || 'other').toLowerCase() === activeTypeFilter);
+    if (!Array.isArray(commits) || commits.length === 0) return [];
+    if (activeTypeFilters.has('all')) return []; // empty → calendar falls back to all commits
+    if (activeTypeFilters.has('tags')) return commits.filter(c => c.tags && c.tags.length > 0);
+    return commits.filter(c => activeTypeFilters.has((c.type || 'other').toLowerCase()));
 }
 
 function getUTCDateKeyFromTimestamp(timestamp) {
@@ -828,18 +951,17 @@ function buildTimeline(commits) {
     // Build commit markers and tag markers (left = oldest, right = newest)
     const markers = commits.map(commit => {
         const position = ((commit.timestamp - oldestTime) / timeRange) * 100;
-        const leftClass = 'left-' + Math.round(position);
+        const leftPct = position.toFixed(1);
         const typeKey = (commit.type || 'other').toLowerCase();
         const dateStr = formatTimestampToDate(commit.timestamp);
         const title = `${commit.message_short} (${dateStr})`;
-        
-        // Check if commit has tags
+
         if (commit.tags && commit.tags.length > 0) {
             const tagTitle = `TAG: ${commit.tags.join(', ')} - ${commit.message_short} (${dateStr})`;
-            return `<div class="timeline-tag ${leftClass}" title="${tagTitle.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}" data-is-tag="true"></div>`;
+            return `<div class="timeline-tag" data-left="${leftPct}" title="${tagTitle.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}" data-is-tag="true"></div>`;
         }
-        
-        return `<div class="timeline-commit type-${typeKey} ${leftClass}" title="${title.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
+
+        return `<div class="timeline-commit type-${typeKey}" data-left="${leftPct}" title="${title.replaceAll('"', '&quot;')}" data-commit-hash="${commit.hash}"></div>`;
     }).join('');
     
     // Determine appropriate tick interval based on timeframe
@@ -897,35 +1019,35 @@ function buildTimeline(commits) {
         dateLabel = new Date(currentTimestamp * 1000).toLocaleDateString('en-US', formatOptions);
     }
     graduations.push(`
-        <div class="timeline-graduation left-0">
+        <div class="timeline-graduation" data-left="0">
             <div class="graduation-tick"></div>
             <div class="graduation-label">${dateLabel}</div>
         </div>
     `);
-    
+
     // Add intermediate ticks
     while (tickIndex < maxTicks - 1) {
         currentTimestamp += tickInterval;
         if (currentTimestamp >= newestTime) break;
-        
+
         const position = ((currentTimestamp - oldestTime) / timeRange) * 100;
-        const leftClass = 'left-' + Math.round(position);
-        
+        const leftPct = position.toFixed(1);
+
         if (useTimeFormat) {
             dateLabel = new Date(currentTimestamp * 1000).toLocaleTimeString('en-US', formatOptions);
         } else {
             dateLabel = new Date(currentTimestamp * 1000).toLocaleDateString('en-US', formatOptions);
         }
-        
+
         graduations.push(`
-            <div class="timeline-graduation ${leftClass}">
+            <div class="timeline-graduation" data-left="${leftPct}">
                 <div class="graduation-tick"></div>
                 <div class="graduation-label">${dateLabel}</div>
             </div>
         `);
         tickIndex++;
     }
-    
+
     // Always add last tick at the end
     if (useTimeFormat) {
         dateLabel = new Date(newestTime * 1000).toLocaleTimeString('en-US', formatOptions);
@@ -933,7 +1055,7 @@ function buildTimeline(commits) {
         dateLabel = new Date(newestTime * 1000).toLocaleDateString('en-US', formatOptions);
     }
     graduations.push(`
-        <div class="timeline-graduation left-100">
+        <div class="timeline-graduation" data-left="100">
             <div class="graduation-tick"></div>
             <div class="graduation-label">${dateLabel}</div>
         </div>
@@ -1022,12 +1144,16 @@ function buildSparkline(commits) {
     let lastX;
 
     if (dailyCounts.length === 1) {
-        const y = height - padding - (dailyCounts[0] / maxCount) * (height - padding * 2);
-        points = [
-            `${padding.toFixed(2)},${y.toFixed(2)}`,
-            `${(width - padding).toFixed(2)},${y.toFixed(2)}`
-        ];
-        lastX = width - padding;
+        const cx = (width / 2).toFixed(2);
+        const cy = (height / 2).toFixed(2);
+        const startDateStr2 = startUTC.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        return `
+        <div class="summary-sparkline">
+            <div class="sparkline-label">Commits per day (${startDateStr2}, 1 day)</div>
+            <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Sparkline: ${dailyCounts[0]} commit(s) on 1 day">
+                <circle class="sparkline-dot" cx="${cx}" cy="${cy}" r="3"></circle>
+            </svg>
+        </div>`;
     } else {
         const step = (width - padding * 2) / (dailyCounts.length - 1);
         points = dailyCounts.map((value, index) => {
@@ -1064,7 +1190,17 @@ function buildSparkline(commits) {
     `;
 }
 
+function applyTimelinePositions() {
+    document.querySelectorAll('[data-left]').forEach(el => {
+        const pct = parseFloat(el.dataset.left);
+        if (!isNaN(pct)) {
+            el.style.left = pct + '%';
+        }
+    });
+}
+
 function setupTimelineHandlers() {
+    applyTimelinePositions();
     // Handle commits
     document.querySelectorAll('.timeline-commit').forEach(dot => {
         dot.addEventListener('click', (e) => {
@@ -1128,22 +1264,100 @@ function collapseAllCommits() {
     });
 }
 
+// F5 — Update summary card numbers to reflect currently visible commits
+
+// F4 — Keyboard shortcuts
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+        const active = document.activeElement;
+        const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'SELECT' || active.tagName === 'TEXTAREA');
+
+        if (e.key === '/' && !isInput) {
+            e.preventDefault();
+            document.getElementById('search-input')?.focus();
+        } else if (e.key === 'Escape') {
+            if (isInput) {
+                active.blur();
+            } else {
+                // Clear all filters
+                if (searchQuery) {
+                    searchQuery = '';
+                    const input = document.getElementById('search-input');
+                    if (input) input.value = '';
+                    document.getElementById('search-clear')?.classList.remove('visible');
+                    performSearch('');
+                } else if (!activeTypeFilters.has('all') || selectedDayFilter || activeAuthorFilter || activeHashFilter) {
+                    activeTypeFilters = new Set(['all']);
+                    activeHashFilter = '';
+                    selectedDayFilter = '';
+                    activeAuthorFilter = '';
+                    const sel = document.getElementById('author-dropdown');
+                    if (sel) sel.value = '';
+                    applyTypeFilter();
+                    if (lastSummaryData && lastSummaryCommits) displaySummary(lastSummaryData, lastSummaryCommits);
+                }
+            }
+        } else if (e.key === 't' && !isInput) {
+            document.getElementById('theme-toggle')?.click();
+        }
+    });
+}
+
+// F7 — Populate author filter dropdown
+function populateAuthorFilter(commits) {
+    const dropdown = document.getElementById('author-dropdown');
+    const filterDiv = document.getElementById('author-filter');
+    if (!dropdown || !filterDiv) return;
+
+    const authors = [...new Set(commits.map(c => c.author).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    if (authors.length <= 1) return; // Not useful with a single author
+
+    while (dropdown.options.length > 1) dropdown.remove(1);
+    authors.forEach(author => {
+        const opt = document.createElement('option');
+        opt.value = author;
+        opt.textContent = author;
+        dropdown.appendChild(opt);
+    });
+
+    filterDiv.classList.remove('hidden');
+
+    dropdown.addEventListener('change', e => {
+        activeAuthorFilter = e.target.value;
+        applyAuthorFilter();
+    });
+}
+
+// F7 — Apply author filter to commit items
+function applyAuthorFilter() {
+    document.querySelectorAll('.commit-item').forEach(el => {
+        if (!activeAuthorFilter) {
+            el.classList.remove('author-filter-hidden');
+            return;
+        }
+        const commit = findCommitByHash(el.dataset.commitHash);
+        el.classList.toggle('author-filter-hidden', commit?.author !== activeAuthorFilter);
+    });
+    updateReleaseVisibilityByActiveFilters();
+    refreshSummaryForActiveFilters();
+    updateFilterStatusBar();
+}
+
 function filterByCommitHash(hash) {
-    activeTypeFilter = 'all';
+    activeTypeFilters = new Set(['all']);
+    activeHashFilter = hash;
     selectedDayFilter = '';
     const commits = document.querySelectorAll('.commit-item');
-    
+
     commits.forEach(commit => {
         const targetId = commit.dataset.target;
         if (targetId === `commit-${hash}`) {
             commit.classList.remove('hidden');
-            // Auto-expand the commit details
             const body = document.getElementById(targetId);
             if (body?.classList.contains('collapsed')) {
                 body.classList.remove('collapsed');
                 body.classList.add('expanded');
             }
-            // Scroll to it smoothly
             setTimeout(() => {
                 commit.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
@@ -1151,8 +1365,7 @@ function filterByCommitHash(hash) {
             commit.classList.add('hidden');
         }
     });
-    
-    // Update summary cards to deactivate all
+
     document.querySelectorAll('.summary-card').forEach(c => c.classList.remove('active'));
     updateFilterStatusBar();
 }
@@ -1188,11 +1401,7 @@ function applyDayFilterToCommits() {
             commit.classList.remove('day-filter-hidden');
             return;
         }
-        if (commit.dataset.commitDay === selectedDayFilter) {
-            commit.classList.remove('day-filter-hidden');
-        } else {
-            commit.classList.add('day-filter-hidden');
-        }
+        commit.classList.toggle('day-filter-hidden', commit.dataset.commitDay !== selectedDayFilter);
     });
     updateReleaseVisibilityByActiveFilters();
     updateFilterStatusBar();
@@ -1201,7 +1410,7 @@ function applyDayFilterToCommits() {
 function updateReleaseVisibilityByActiveFilters() {
     if (currentViewMode !== 'release') return;
     document.querySelectorAll('.release-section').forEach(releaseEl => {
-        const visibleCommits = releaseEl.querySelectorAll('.commit-item:not(.hidden):not(.search-hidden):not(.day-filter-hidden)');
+        const visibleCommits = releaseEl.querySelectorAll('.commit-item:not(.hidden):not(.search-hidden):not(.day-filter-hidden):not(.author-filter-hidden)');
         if (visibleCommits.length === 0) {
             releaseEl.classList.add('search-hidden');
         } else {
@@ -1210,63 +1419,69 @@ function updateReleaseVisibilityByActiveFilters() {
     });
 }
 
+// Set a single type filter (resets multi-select)
 function filterCommitsByType(type) {
-    activeTypeFilter = type;
+    activeTypeFilters = new Set([type]);
+    activeHashFilter = '';
+    applyTypeFilter();
+}
+
+// Toggle a type in/out of the active set (Ctrl+click, F6)
+function toggleTypeFilter(type) {
+    if (activeTypeFilters.has('all')) {
+        activeTypeFilters = new Set([type]);
+    } else if (activeTypeFilters.has(type)) {
+        activeTypeFilters.delete(type);
+        if (activeTypeFilters.size === 0) activeTypeFilters.add('all');
+    } else {
+        activeTypeFilters.add(type);
+    }
+    activeHashFilter = '';
+    applyTypeFilter();
+}
+
+// Core visibility logic — applies activeTypeFilters to DOM
+function applyTypeFilter() {
     const commits = document.querySelectorAll('.commit-item');
     const timelineDots = document.querySelectorAll('.timeline-commit');
-    
+    const showAll = activeTypeFilters.has('all');
+    const showTags = activeTypeFilters.has('tags');
+
     commits.forEach(commit => {
-        if (type === 'all') {
+        if (showAll) {
             commit.classList.remove('hidden');
-        } else if (type === 'tags') {
-            // Show only commits that have tags
-            const commitElement = commit;
-            const hasTag = commitElement.classList.contains('has-tag');
-            if (hasTag) {
-                commit.classList.remove('hidden');
-            } else {
-                commit.classList.add('hidden');
-            }
+        } else if (showTags) {
+            commit.classList.toggle('hidden', !commit.classList.contains('has-tag'));
         } else {
-            const commitType = commit.dataset.commitType;
-            if (commitType === type) {
-                commit.classList.remove('hidden');
+            commit.classList.toggle('hidden', !activeTypeFilters.has(commit.dataset.commitType));
+        }
+    });
+
+    timelineDots.forEach(dot => {
+        dot.classList.remove('visible', 'hidden', 'opaque-0', 'opaque-1');
+        if (showAll) {
+            dot.classList.add('visible');
+        } else if (showTags) {
+            dot.classList.add('hidden', 'opaque-0');
+        } else {
+            const dotType = Array.from(dot.classList).find(c => c.startsWith('type-'))?.replace('type-', '');
+            if (activeTypeFilters.has(dotType)) {
+                dot.classList.add('visible');
             } else {
-                commit.classList.add('hidden');
+                dot.classList.add('hidden', 'opaque-0');
             }
         }
     });
 
-    // Also filter timeline dots and tags based on their type class
-    timelineDots.forEach(dot => {
-        dot.classList.remove('visible', 'hidden', 'opaque-0', 'opaque-1');
-        if (type === 'all') {
-            dot.classList.add('visible');
-        } else if (type === 'tags') {
-            // Hide all regular commit dots when showing tags
-            dot.classList.add('hidden', 'opaque-0');
-        } else {
-            const dotTypeClass = Array.from(dot.classList).find(c => c.startsWith('type-'));
-            if (dotTypeClass) {
-                const dotType = dotTypeClass.replace('type-', '');
-                if (dotType === type) {
-                    dot.classList.add('visible');
-                } else {
-                    dot.classList.add('hidden', 'opaque-0');
-                }
-            }
-        }
-    });
-    
-    // Handle tags separately
-    const timelineTags = document.querySelectorAll('.timeline-tag');
-    timelineTags.forEach(tag => {
-        tag.classList.remove('hidden', 'opaque-0');
+    document.querySelectorAll('.timeline-tag').forEach(tag => {
+        tag.classList.remove('hidden', 'opaque-0', 'visible');
         tag.style.opacity = '';
-        if (type === 'all' || type === 'tags') {
+        if (showTags) {
             tag.classList.add('visible');
+        } else if (showAll) {
+            // Default state: show tags without the emphasized "visible" styling.
+            tag.classList.remove('visible');
         } else {
-            // Tags stay visible but dimmed when filtering by type
             tag.style.opacity = '0.6';
         }
     });
@@ -1305,8 +1520,11 @@ function displayCommits(data) {
         chore: (grouped.chore || []).length,
         other: (grouped.other || []).length
     };
-    displaySummary(summary, data.commits);
-    
+    globalSummary = summary;
+    globalCommits = data.commits;
+    summaryScopeCommits = data.commits;
+    refreshSummaryForActiveFilters();
+
     // Display all commits in original JSON order with type badges
     if (Array.isArray(data.commits) && data.commits.length > 0) {
         container.innerHTML = `
@@ -1319,7 +1537,7 @@ function displayCommits(data) {
     }
 
     setupToggleHandlers();
-    filterCommitsByType(activeTypeFilter);
+    applyTypeFilter();
 
     if (searchQuery) {
         performSearch(searchQuery);
@@ -1330,6 +1548,24 @@ function createCommitHTML(commit, repoUrl) {
     const commitUrl = repoUrl ? `${repoUrl}/commit/${commit.hash}` : '#';
     const summaryText = escapeHtml(commit.message_short || (commit.message.split('\n')[0] || ''));
     const fullMessage = escapeHtml(commit.message);
+    const modifiedFiles = Array.isArray(commit.modified_files) ? commit.modified_files : [];
+    const modifiedFilesDetails = Array.isArray(commit.modified_files_details) ? commit.modified_files_details : [];
+    const sortedModifiedFilesDetails = [...modifiedFilesDetails].sort((a, b) => {
+        const aInsertions = Number(a?.insertions) || 0;
+        const aDeletions = Number(a?.deletions) || 0;
+        const bInsertions = Number(b?.insertions) || 0;
+        const bDeletions = Number(b?.deletions) || 0;
+
+        const impactA = (Number(a?.lines_changed) || 0) || (aInsertions + aDeletions);
+        const impactB = (Number(b?.lines_changed) || 0) || (bInsertions + bDeletions);
+        if (impactB !== impactA) return impactB - impactA;
+
+        const churnA = aInsertions + aDeletions;
+        const churnB = bInsertions + bDeletions;
+        if (churnB !== churnA) return churnB - churnA;
+
+        return String(a?.path || '').localeCompare(String(b?.path || ''));
+    });
     const bodyId = `commit-${commit.hash}`;
     const isRenovate = /renovate/i.test(commit.author || '');
     const hasTag = commit.tags && commit.tags.length > 0;
@@ -1343,6 +1579,23 @@ function createCommitHTML(commit, repoUrl) {
     const tagBadges = hasTag ? commit.tags.map(tag => 
         `<span class="commit-tag" title="Git Tag: ${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
     ).join('') : '';
+    const modifiedFilesHtml = modifiedFiles.length > 0
+        ? `
+            <div class="commit-files" aria-label="Modified files">
+                <div class="commit-files-title">Modified files (${modifiedFiles.length})</div>
+                <ul class="commit-files-list">
+                    ${sortedModifiedFilesDetails.length > 0
+                        ? sortedModifiedFilesDetails.map(file => {
+                            const insertions = Number(file.insertions) || 0;
+                            const deletions = Number(file.deletions) || 0;
+                            const linesChanged = Number(file.lines_changed) || 0;
+                            return `<li class="commit-file-item"><span class="commit-file-path">${escapeHtml(file.path || '')}</span><span class="commit-file-stats"><span class="file-stat additions">+${insertions}</span><span class="file-stat deletions">-${deletions}</span><span class="file-stat lines">Δ ${linesChanged}</span></span></li>`;
+                        }).join('')
+                        : modifiedFiles.map(file => `<li class="commit-file-item"><span class="commit-file-path">${escapeHtml(file)}</span></li>`).join('')}
+                </ul>
+            </div>
+        `
+        : '';
     
     return `
         <li class="${commitClass}${tagClass}" data-target="${bodyId}" data-commit-type="${typeKey}" data-commit-hash="${commit.hash}" data-commit-day="${getUTCDateKeyFromTimestamp(commit.timestamp)}">
@@ -1359,6 +1612,7 @@ function createCommitHTML(commit, repoUrl) {
             <div class="commit-summary">${summaryText}</div>
             <div class="commit-body collapsed" id="${bodyId}">
                 <div class="commit-message">${fullMessage}</div>
+                ${modifiedFilesHtml}
                 <div class="commit-footer">
                     <span class="commit-author">by ${escapeHtml(commit.author)}</span>
                     <div class="commit-stats">
@@ -1504,8 +1758,8 @@ function performSearch(query) {
     
     // Handle release sections in "By Release" mode
     updateReleaseVisibilityByActiveFilters();
-    
-    // Update search info
+
+
     if (matchCount === 0) {
         searchInfo.textContent = 'No commits found';
         searchInfo.classList.remove('has-results');

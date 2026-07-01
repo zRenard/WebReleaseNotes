@@ -1,12 +1,499 @@
 {
-  "generated_at": "2026-03-19 17:54:49",
-  "generated_at_iso": "2026-03-19T17:54:49.360030",
+  "generated_at": "2026-07-02 00:27:18",
+  "generated_at_iso": "2026-07-02T00:27:18.941597",
   "repository": {
     "name": "WebReleaseNotes",
     "branch": "main",
     "url": "https://github.com/zRenard/WebReleaseNotes"
   },
   "commits": [
+    {
+      "hash": "7e7d2d127bb97a7a0b168e67ea654122967dc609",
+      "short_hash": "7e7d2d1",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1781860809,
+      "message": "Merge pull request #10 from zRenard/renovate/actions-checkout-7.x\n\nchore(deps): update actions/checkout action to v7",
+      "message_short": "Merge pull request #10 from zRenard/renovate/actions-checkout-7.x",
+      "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "e752422e14e41abc0a149c2663fa4b54f3af0a15",
+      "short_hash": "e752422",
+      "author": "renovate[bot]",
+      "email": "29139614+renovate[bot]@users.noreply.github.com",
+      "timestamp": 1781818680,
+      "message": "chore(deps): update actions/checkout action to v7",
+      "message_short": "chore(deps): update actions/checkout action to v7",
+      "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "9d3760052fa11b9d12b59b1879de87a945b194aa",
+      "short_hash": "9d37600",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1777982281,
+      "message": "docs: Update readme and adding tutorials",
+      "message_short": "docs: Update readme and adding tutorials",
+      "type": "docs",
+      "modified_files": [
+        "README.md",
+        "TUTORIAL.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 60,
+          "deletions": 34,
+          "lines_changed": 94
+        },
+        {
+          "path": "TUTORIAL.md",
+          "insertions": 686,
+          "deletions": 0,
+          "lines_changed": 686
+        }
+      ],
+      "files_changed": 2,
+      "insertions": 746,
+      "deletions": 34
+    },
+    {
+      "hash": "77915f38c76ecdcf1e251fdeadf85694076c2fc2",
+      "short_hash": "77915f3",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1777972399,
+      "message": "feat: Improve python logs",
+      "message_short": "feat: Improve python logs",
+      "type": "feat",
+      "modified_files": [
+        "release_notes.py"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.py",
+          "insertions": 22,
+          "deletions": 4,
+          "lines_changed": 26
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 22,
+      "deletions": 4
+    },
+    {
+      "hash": "60f49b179c3a8f2c24eca4207a70361f36877210",
+      "short_hash": "60f49b1",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1777971715,
+      "message": "fix: tag assigment issue, assign old tag to new commit",
+      "message_short": "fix: tag assigment issue, assign old tag to new commit",
+      "type": "fix",
+      "modified_files": [
+        "release_notes.py"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.py",
+          "insertions": 1,
+          "deletions": 67,
+          "lines_changed": 68
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 67
+    },
+    {
+      "hash": "64b4fee5112c096a2c2bc2b5b61781516d1aeb58",
+      "short_hash": "64b4fee",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1777970628,
+      "message": "feat: update server for autoreload in dev mode\r\nfix: minor CSS fix",
+      "message_short": "feat: update server for autoreload in dev mode\r",
+      "type": "feat",
+      "modified_files": [
+        "release_notes.css",
+        "server.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        },
+        {
+          "path": "server.js",
+          "insertions": 189,
+          "deletions": 9,
+          "lines_changed": 198
+        }
+      ],
+      "files_changed": 2,
+      "insertions": 190,
+      "deletions": 10
+    },
+    {
+      "hash": "d054358b8c7dc886a0251f2d8f1e30ea9927184c",
+      "short_hash": "d054358",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1777970612,
+      "message": "feat: update server for autoreload in dev mode\r\nfix: mino CSS fix",
+      "message_short": "feat: update server for autoreload in dev mode\r",
+      "type": "feat",
+      "modified_files": [
+        "package.json"
+      ],
+      "modified_files_details": [
+        {
+          "path": "package.json",
+          "insertions": 3,
+          "deletions": 1,
+          "lines_changed": 4
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 3,
+      "deletions": 1
+    },
+    {
+      "hash": "c01b60fb5f664f292b9b31a24879c66139bd0ed4",
+      "short_hash": "c01b60f",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1777067203,
+      "message": "Feat: Ajout du calendrier et reorgnisations des panneaux.\nChore: Mise a jour des lib\n\nCo-authored-by: Copilot <copilot@github.com>",
+      "message_short": "Feat: Ajout du calendrier et reorgnisations des panneaux.",
+      "type": "feat",
+      "modified_files": [
+        "package-lock.json",
+        "release_notes.css",
+        "release_notes.html",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "package-lock.json",
+          "insertions": 277,
+          "deletions": 156,
+          "lines_changed": 433
+        },
+        {
+          "path": "release_notes.css",
+          "insertions": 499,
+          "deletions": 7,
+          "lines_changed": 506
+        },
+        {
+          "path": "release_notes.html",
+          "insertions": 2,
+          "deletions": 0,
+          "lines_changed": 2
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 360,
+          "deletions": 34,
+          "lines_changed": 394
+        }
+      ],
+      "files_changed": 4,
+      "insertions": 1138,
+      "deletions": 197,
+      "tags": [
+        "v1.5.0"
+      ]
+    },
+    {
+      "hash": "6a9b096c2b8861961c2e645c6749ba65b4000ba1",
+      "short_hash": "6a9b096",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1776120732,
+      "message": "Merge pull request #9 from zRenard/renovate/actions-upload-pages-artifact-5.x",
+      "message_short": "Merge pull request #9 from zRenard/renovate/actions-upload-pages-artifact-5.x",
+      "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "7fafa188fc4814cd57756f16e87d498e2f09f802",
+      "short_hash": "7fafa18",
+      "author": "renovate[bot]",
+      "email": "29139614+renovate[bot]@users.noreply.github.com",
+      "timestamp": 1776117259,
+      "message": "Update actions/upload-pages-artifact action to v5",
+      "message_short": "Update actions/upload-pages-artifact action to v5",
+      "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "3fda228dfd265ce4aa18d8e9d020c4cd6914adad",
+      "short_hash": "3fda228",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1775975459,
+      "message": "Merge pull request #8 from zRenard/renovate/softprops-action-gh-release-3.x",
+      "message_short": "Merge pull request #8 from zRenard/renovate/softprops-action-gh-release-3.x",
+      "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "17e761814c699d483181ad8ab87df1b9fbde5866",
+      "short_hash": "17e7618",
+      "author": "renovate[bot]",
+      "email": "29139614+renovate[bot]@users.noreply.github.com",
+      "timestamp": 1775971595,
+      "message": "Update softprops/action-gh-release action to v3",
+      "message_short": "Update softprops/action-gh-release action to v3",
+      "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "eed97916de7daf062a3e2512d1537964cb0e4a2a",
+      "short_hash": "eed9791",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1774649932,
+      "message": "Merge pull request #7 from zRenard/renovate/actions-configure-pages-6.x\n\nchore(deps): update actions/configure-pages action to v6",
+      "message_short": "Merge pull request #7 from zRenard/renovate/actions-configure-pages-6.x",
+      "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "f99d2000662bd02a6e1507a5eb13c3cae5f9c57c",
+      "short_hash": "f99d200",
+      "author": "renovate[bot]",
+      "email": "29139614+renovate[bot]@users.noreply.github.com",
+      "timestamp": 1774649174,
+      "message": "chore(deps): update actions/configure-pages action to v6",
+      "message_short": "chore(deps): update actions/configure-pages action to v6",
+      "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "ffe90d870a9b8a9ba6ca3f54a88f5bf4a3d28323",
+      "short_hash": "ffe90d8",
+      "author": "zRenard",
+      "email": "zRenard@users.noreply.github.com",
+      "timestamp": 1774475453,
+      "message": "Merge pull request #6 from zRenard/renovate/actions-deploy-pages-5.x\n\nchore(deps): update actions/deploy-pages action to v5",
+      "message_short": "Merge pull request #6 from zRenard/renovate/actions-deploy-pages-5.x",
+      "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "2350cd9d307cc9b6635c206cc160c22287f7f3b3",
+      "short_hash": "2350cd9",
+      "author": "renovate[bot]",
+      "email": "29139614+renovate[bot]@users.noreply.github.com",
+      "timestamp": 1774463889,
+      "message": "chore(deps): update actions/deploy-pages action to v5",
+      "message_short": "chore(deps): update actions/deploy-pages action to v5",
+      "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "hash": "0e260ebba40e87ee9e1b2041f3c73de0fff0f072",
+      "short_hash": "0e260eb",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1773945125,
+      "message": "docs: Add tags handling doc",
+      "message_short": "docs: Add tags handling doc",
+      "type": "docs",
+      "modified_files": [
+        "README.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 31,
+          "deletions": 1,
+          "lines_changed": 32
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 31,
+      "deletions": 1
+    },
+    {
+      "hash": "43f2d5409854307e643a919de76e08f67c8fe69a",
+      "short_hash": "43f2d54",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1773940003,
+      "message": "feat: Associate light tags to commit",
+      "message_short": "feat: Associate light tags to commit",
+      "type": "feat",
+      "modified_files": [
+        "RELEASE_NOTES.md",
+        "release_notes.json",
+        "release_notes.py"
+      ],
+      "modified_files_details": [
+        {
+          "path": "RELEASE_NOTES.md",
+          "insertions": 190,
+          "deletions": 10,
+          "lines_changed": 200
+        },
+        {
+          "path": "release_notes.json",
+          "insertions": 371,
+          "deletions": 2,
+          "lines_changed": 373
+        },
+        {
+          "path": "release_notes.py",
+          "insertions": 76,
+          "deletions": 2,
+          "lines_changed": 78
+        }
+      ],
+      "files_changed": 3,
+      "insertions": 637,
+      "deletions": 14,
+      "tags": [
+        "v1.4.6"
+      ]
+    },
     {
       "hash": "7cf2ef1a1a3d19ed6fe9655cef7e5aa576c7f9d7",
       "short_hash": "7cf2ef1",
@@ -16,9 +503,23 @@
       "message": "docs: typo fix + wrong workflow",
       "message_short": "docs: typo fix + wrong workflow",
       "type": "docs",
+      "modified_files": [
+        "README.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
-      "deletions": 1
+      "deletions": 1,
+      "tags": [
+        "v1.4.5"
+      ]
     },
     {
       "hash": "b917ba36cc28fedc8862f5b52956800d1667d409",
@@ -29,12 +530,20 @@
       "message": "fix: Markdown ,inor errors",
       "message_short": "fix: Markdown ,inor errors",
       "type": "fix",
+      "modified_files": [
+        "README.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 2,
+          "deletions": 3,
+          "lines_changed": 5
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
-      "deletions": 3,
-      "tags": [
-        "v1.4.4"
-      ]
+      "deletions": 3
     },
     {
       "hash": "9885694a564d1a3dfde13db7ac513d8e290bf9f6",
@@ -45,6 +554,17 @@
       "message": "Merge pull request #5 from zRenard/renovate/major-github-artifact-actions\n\nUpdate GitHub Artifact Actions (major)",
       "message_short": "Merge pull request #5 from zRenard/renovate/major-github-artifact-actions",
       "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 2
@@ -58,6 +578,17 @@
       "message": "add codeowners",
       "message_short": "add codeowners",
       "type": "feat",
+      "modified_files": [
+        ".github/CODEOWNERS"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/CODEOWNERS",
+          "insertions": 1,
+          "deletions": 0,
+          "lines_changed": 1
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 0
@@ -71,6 +602,17 @@
       "message": "Update GitHub Artifact Actions",
       "message_short": "Update GitHub Artifact Actions",
       "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 2
@@ -84,6 +626,17 @@
       "message": "feat. take PR into account",
       "message_short": "feat. take PR into account",
       "type": "feat",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 5,
+          "deletions": 2,
+          "lines_changed": 7
+        }
+      ],
       "files_changed": 1,
       "insertions": 5,
       "deletions": 2
@@ -97,6 +650,17 @@
       "message": "fix. testing another option to get commit logs",
       "message_short": "fix. testing another option to get commit logs",
       "type": "fix",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 2,
@@ -113,6 +677,17 @@
       "message": "fix. declare HEAD in py script to base computation",
       "message_short": "fix. declare HEAD in py script to base computation",
       "type": "fix",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 1,
@@ -129,6 +704,17 @@
       "message": "fix. missing branch ref in checkout",
       "message_short": "fix. missing branch ref in checkout",
       "type": "fix",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 0,
+          "lines_changed": 1
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 0,
@@ -145,6 +731,17 @@
       "message": "Merge pull request #3 from zRenard/renovate/major-github-artifact-actions\n\nUpdate GitHub Artifact Actions (major)",
       "message_short": "Merge pull request #3 from zRenard/renovate/major-github-artifact-actions",
       "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 2,
@@ -161,6 +758,17 @@
       "message": "Merge pull request #2 from zRenard/renovate/actions-setup-python-6.x\n\nUpdate actions/setup-python action to v6",
       "message_short": "Merge pull request #2 from zRenard/renovate/actions-setup-python-6.x",
       "type": "ops",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 1
@@ -174,6 +782,17 @@
       "message": "Update actions/setup-python action to v6",
       "message_short": "Update actions/setup-python action to v6",
       "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 1
@@ -187,6 +806,24 @@
       "message": "Feat. Add link to demo in ReadMe and minor refinement of workflow",
       "message_short": "Feat. Add link to demo in ReadMe and minor refinement of workflow",
       "type": "docs",
+      "modified_files": [
+        ".github/workflows/main.yml",
+        "README.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 8,
+          "deletions": 8,
+          "lines_changed": 16
+        },
+        {
+          "path": "README.md",
+          "insertions": 5,
+          "deletions": 0,
+          "lines_changed": 5
+        }
+      ],
       "files_changed": 2,
       "insertions": 13,
       "deletions": 8
@@ -200,6 +837,17 @@
       "message": "Update GitHub Artifact Actions",
       "message_short": "Update GitHub Artifact Actions",
       "type": "chore",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 2
@@ -213,6 +861,17 @@
       "message": "Merge pull request #1 from zRenard/renovate/configure\n\nConfigure Renovate",
       "message_short": "Merge pull request #1 from zRenard/renovate/configure",
       "type": "chore",
+      "modified_files": [
+        "renovate.json"
+      ],
+      "modified_files_details": [
+        {
+          "path": "renovate.json",
+          "insertions": 6,
+          "deletions": 0,
+          "lines_changed": 6
+        }
+      ],
       "files_changed": 1,
       "insertions": 6,
       "deletions": 0
@@ -226,6 +885,17 @@
       "message": "fix. missing py deps",
       "message_short": "fix. missing py deps",
       "type": "fix",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 4,
+          "deletions": 0,
+          "lines_changed": 4
+        }
+      ],
       "files_changed": 1,
       "insertions": 4,
       "deletions": 0
@@ -239,6 +909,17 @@
       "message": "Add renovate.json",
       "message_short": "Add renovate.json",
       "type": "chore",
+      "modified_files": [
+        "renovate.json"
+      ],
+      "modified_files_details": [
+        {
+          "path": "renovate.json",
+          "insertions": 6,
+          "deletions": 0,
+          "lines_changed": 6
+        }
+      ],
       "files_changed": 1,
       "insertions": 6,
       "deletions": 0
@@ -252,6 +933,17 @@
       "message": "Feat. publish release not in GH as demo",
       "message_short": "Feat. publish release not in GH as demo",
       "type": "feat",
+      "modified_files": [
+        ".github/workflows/main.yml"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".github/workflows/main.yml",
+          "insertions": 24,
+          "deletions": 0,
+          "lines_changed": 24
+        }
+      ],
       "files_changed": 1,
       "insertions": 24,
       "deletions": 0
@@ -265,6 +957,24 @@
       "message": "fix. Broken theme selection and iss tag for summary that include a line break",
       "message_short": "fix. Broken theme selection and iss tag for summary that include a line break",
       "type": "fix",
+      "modified_files": [
+        "README.md",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 14,
+          "deletions": 1,
+          "lines_changed": 15
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 3,
+          "deletions": 0,
+          "lines_changed": 3
+        }
+      ],
       "files_changed": 2,
       "insertions": 17,
       "deletions": 1
@@ -278,6 +988,24 @@
       "message": "feat. commit can be excluded based on title, author or message content. All combinable.",
       "message_short": "feat. commit can be excluded based on title, author or message content. All combinable.",
       "type": "feat",
+      "modified_files": [
+        "README.md",
+        "release_notes.py"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 5,
+          "deletions": 1,
+          "lines_changed": 6
+        },
+        {
+          "path": "release_notes.py",
+          "insertions": 111,
+          "deletions": 10,
+          "lines_changed": 121
+        }
+      ],
       "files_changed": 2,
       "insertions": 116,
       "deletions": 11
@@ -291,6 +1019,24 @@
       "message": "Fix Missing ticks on timeline",
       "message_short": "Fix Missing ticks on timeline",
       "type": "fix",
+      "modified_files": [
+        "release_notes.css",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 17,
+          "deletions": 7,
+          "lines_changed": 24
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 90,
+          "deletions": 7,
+          "lines_changed": 97
+        }
+      ],
       "files_changed": 2,
       "insertions": 107,
       "deletions": 14
@@ -304,6 +1050,24 @@
       "message": "Feat. Update pag title based on project name",
       "message_short": "Feat. Update pag title based on project name",
       "type": "feat",
+      "modified_files": [
+        "release_notes.html",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.html",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 5,
+          "deletions": 3,
+          "lines_changed": 8
+        }
+      ],
       "files_changed": 2,
       "insertions": 6,
       "deletions": 4
@@ -317,6 +1081,24 @@
       "message": "fix Reduce sparkline width and add label",
       "message_short": "fix Reduce sparkline width and add label",
       "type": "fix",
+      "modified_files": [
+        "release_notes.css",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 25,
+          "deletions": 5,
+          "lines_changed": 30
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 28,
+          "deletions": 13,
+          "lines_changed": 41
+        }
+      ],
       "files_changed": 2,
       "insertions": 53,
       "deletions": 18
@@ -330,6 +1112,24 @@
       "message": "Feat. Add commits sparkline",
       "message_short": "Feat. Add commits sparkline",
       "type": "feat",
+      "modified_files": [
+        "release_notes.css",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 37,
+          "deletions": 3,
+          "lines_changed": 40
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 78,
+          "deletions": 1,
+          "lines_changed": 79
+        }
+      ],
       "files_changed": 2,
       "insertions": 115,
       "deletions": 4
@@ -343,6 +1143,17 @@
       "message": "Doc Minor update about themes in readme",
       "message_short": "Doc Minor update about themes in readme",
       "type": "docs",
+      "modified_files": [
+        "README.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": "README.md",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        }
+      ],
       "files_changed": 1,
       "insertions": 1,
       "deletions": 1
@@ -356,6 +1167,31 @@
       "message": "Add them switcher and dark theme",
       "message_short": "Add them switcher and dark theme",
       "type": "feat",
+      "modified_files": [
+        "release_notes.css",
+        "release_notes.html",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 294,
+          "deletions": 22,
+          "lines_changed": 316
+        },
+        {
+          "path": "release_notes.html",
+          "insertions": 3,
+          "deletions": 0,
+          "lines_changed": 3
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 51,
+          "deletions": 0,
+          "lines_changed": 51
+        }
+      ],
       "files_changed": 3,
       "insertions": 348,
       "deletions": 22
@@ -369,6 +1205,31 @@
       "message": "fix Minor bug + sample data update",
       "message_short": "fix Minor bug + sample data update",
       "type": "fix",
+      "modified_files": [
+        "RELEASE_NOTES.md",
+        "release_notes.js",
+        "release_notes.json"
+      ],
+      "modified_files_details": [
+        {
+          "path": "RELEASE_NOTES.md",
+          "insertions": 11,
+          "deletions": 11,
+          "lines_changed": 22
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 1,
+          "deletions": 1,
+          "lines_changed": 2
+        },
+        {
+          "path": "release_notes.json",
+          "insertions": 44,
+          "deletions": 2,
+          "lines_changed": 46
+        }
+      ],
       "files_changed": 3,
       "insertions": 56,
       "deletions": 14,
@@ -385,6 +1246,31 @@
       "message": "fix l'highlight de la recherche etait pareil et cassé la structure HTML",
       "message_short": "fix l'highlight de la recherche etait pareil et cassé la structure HTML",
       "type": "fix",
+      "modified_files": [
+        "RELEASE_NOTES.md",
+        "release_notes.css",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "RELEASE_NOTES.md",
+          "insertions": 29,
+          "deletions": 18,
+          "lines_changed": 47
+        },
+        {
+          "path": "release_notes.css",
+          "insertions": 1,
+          "deletions": 0,
+          "lines_changed": 1
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 95,
+          "deletions": 28,
+          "lines_changed": 123
+        }
+      ],
       "files_changed": 3,
       "insertions": 125,
       "deletions": 46
@@ -398,6 +1284,24 @@
       "message": "Fix Update gitignore and push updated markdown example",
       "message_short": "Fix Update gitignore and push updated markdown example",
       "type": "fix",
+      "modified_files": [
+        ".gitignore",
+        "RELEASE_NOTES.md"
+      ],
+      "modified_files_details": [
+        {
+          "path": ".gitignore",
+          "insertions": 1,
+          "deletions": 0,
+          "lines_changed": 1
+        },
+        {
+          "path": "RELEASE_NOTES.md",
+          "insertions": 52,
+          "deletions": 10,
+          "lines_changed": 62
+        }
+      ],
       "files_changed": 2,
       "insertions": 53,
       "deletions": 10
@@ -411,6 +1315,24 @@
       "message": "fix dates issues in classic releases",
       "message_short": "fix dates issues in classic releases",
       "type": "fix",
+      "modified_files": [
+        "release_notes.js",
+        "release_notes.json"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.js",
+          "insertions": 2,
+          "deletions": 2,
+          "lines_changed": 4
+        },
+        {
+          "path": "release_notes.json",
+          "insertions": 87,
+          "deletions": 2,
+          "lines_changed": 89
+        }
+      ],
       "files_changed": 2,
       "insertions": 89,
       "deletions": 4,
@@ -427,6 +1349,31 @@
       "message": "Add badges with releases numbers and specific one for incomming release\r\nFix an issues with dates of commits",
       "message_short": "Add badges with releases numbers and specific one for incomming release\r",
       "type": "feat",
+      "modified_files": [
+        "release_notes.css",
+        "release_notes.html",
+        "release_notes.js"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 45,
+          "deletions": 0,
+          "lines_changed": 45
+        },
+        {
+          "path": "release_notes.html",
+          "insertions": 2,
+          "deletions": 0,
+          "lines_changed": 2
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 40,
+          "deletions": 5,
+          "lines_changed": 45
+        }
+      ],
       "files_changed": 3,
       "insertions": 87,
       "deletions": 5
@@ -440,6 +1387,17 @@
       "message": "fix css lint errors",
       "message_short": "fix css lint errors",
       "type": "fix",
+      "modified_files": [
+        "release_notes.css"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 2,
+          "deletions": 1,
+          "lines_changed": 3
+        }
+      ],
       "files_changed": 1,
       "insertions": 2,
       "deletions": 1,
@@ -447,181 +1405,6 @@
         "v1.2.0",
         "v1.2.1"
       ]
-    },
-    {
-      "hash": "f0485d9618842fa342501a897d12878927ba0871",
-      "short_hash": "f0485d9",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1770135804,
-      "message": "Add search",
-      "message_short": "Add search",
-      "type": "feat",
-      "files_changed": 4,
-      "insertions": 334,
-      "deletions": 18
-    },
-    {
-      "hash": "42563c679c1c1915f523f7391d8a6cca0c7d4a0a",
-      "short_hash": "42563c6",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769694631,
-      "message": "Feat. Add Timeline in md file\r\nFix. Parameters names for md generation only\r\nDoc. Add sample md files",
-      "message_short": "Feat. Add Timeline in md file\r",
-      "type": "feat",
-      "files_changed": 4,
-      "insertions": 545,
-      "deletions": 10
-    },
-    {
-      "hash": "c7561719f698c703f8ff8bb38274634d6f909cbe",
-      "short_hash": "c756171",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769681344,
-      "message": "feat. Add iption to get only lastest version in markdown\r\nfeat. Add default markdown",
-      "message_short": "feat. Add iption to get only lastest version in markdown\r",
-      "type": "feat",
-      "files_changed": 2,
-      "insertions": 21,
-      "deletions": 6
-    },
-    {
-      "hash": "ccda61aac0ee3960b6f9f28412ee753b948ad34c",
-      "short_hash": "ccda61a",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769615248,
-      "message": "Feat. Add new catgories for commit\r\nFeat. Add download markdown\r\nTest. Add Sample json files\r\nRefactor. Dates handling in python script",
-      "message_short": "Feat. Add new catgories for commit\r",
-      "type": "feat",
-      "files_changed": 8,
-      "insertions": 937,
-      "deletions": 751,
-      "tags": [
-        "v1.1.0"
-      ]
-    },
-    {
-      "hash": "2b0c69c9589b57fdffadecd3eac7234fc4d233e2",
-      "short_hash": "2b0c69c",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769610177,
-      "message": "feat. Add option to generate markdown format",
-      "message_short": "feat. Add option to generate markdown format",
-      "type": "feat",
-      "files_changed": 2,
-      "insertions": 361,
-      "deletions": 7
-    },
-    {
-      "hash": "fa7620e24b65deee2c2fe7a4b04dfce1d030b17b",
-      "short_hash": "fa7620e",
-      "author": "zRenard",
-      "email": "zrenard@gmail.com",
-      "timestamp": 1769535368,
-      "message": "fix: Correct emoji in deployment preparation step",
-      "message_short": "fix: Correct emoji in deployment preparation step",
-      "type": "fix",
-      "files_changed": 1,
-      "insertions": 1,
-      "deletions": 1
-    },
-    {
-      "hash": "1274e0c470a743ae06de44aabaf9e4feb93b4083",
-      "short_hash": "1274e0c",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769524028,
-      "message": "fix : Update workflow",
-      "message_short": "fix : Update workflow",
-      "type": "fix",
-      "files_changed": 1,
-      "insertions": 33,
-      "deletions": 2,
-      "tags": [
-        "v1.0.0"
-      ]
-    },
-    {
-      "hash": "a149396d9c6847f79056bffaa9654a72abacc48b",
-      "short_hash": "a149396",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769522941,
-      "message": "feat basic workflow + fix tipo",
-      "message_short": "feat basic workflow + fix tipo",
-      "type": "fix",
-      "files_changed": 2,
-      "insertions": 63,
-      "deletions": 1
-    },
-    {
-      "hash": "857e904c8a0771ddf9dac2e7f7e02a94ac7316d4",
-      "short_hash": "857e904",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769521359,
-      "message": "feat: Handle incomming release\r\n- Handle incomming release for commit not yet included in a tag\r\n- Minor fix in validator",
-      "message_short": "feat: Handle incomming release\r",
-      "type": "feat",
-      "files_changed": 7,
-      "insertions": 1813,
-      "deletions": 17
-    },
-    {
-      "hash": "b72e4cec5e53a251ae63863bad0447a19d67937d",
-      "short_hash": "b72e4ce",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769511480,
-      "message": "Add custom funding link to FUNDING.yml",
-      "message_short": "Add custom funding link to FUNDING.yml",
-      "type": "feat",
-      "files_changed": 1,
-      "insertions": 1,
-      "deletions": 0
-    },
-    {
-      "hash": "9256a7f72038581b4ada95f1449a5621ac9a608d",
-      "short_hash": "9256a7f",
-      "author": "zRenard",
-      "email": "zrenard@gmail.com",
-      "timestamp": 1769469504,
-      "message": "feat: add local checker and minification",
-      "message_short": "feat: add local checker and minification",
-      "type": "feat",
-      "files_changed": 5,
-      "insertions": 111,
-      "deletions": 7
-    },
-    {
-      "hash": "7390e79dc28ba9baf31131241360372d837363fa",
-      "short_hash": "7390e79",
-      "author": "zRenard",
-      "email": "zrenard@gmail.com",
-      "timestamp": 1769467907,
-      "message": "feat: add release notes exporter script\n\n- Introduced a new Python script `release_notes.py` to extract and export commit messages from the current repository into a JSON format for release notes.\n- Implemented commit classification based on conventional commit prefixes and heuristics.\n- Added functionality to retrieve the last N commits, including metadata such as author, date, and changes made.\n- Included error handling for repository processing and file operations.\n- Added a new JavaScript file `server.js` to create a basic HTTP server using Node.js.",
-      "message_short": "feat: add release notes exporter script",
-      "type": "feat",
-      "files_changed": 6,
-      "insertions": 3114,
-      "deletions": 0
-    },
-    {
-      "hash": "d9a1e78072d33f5fef9400b9dc4de1d1fe895b66",
-      "short_hash": "d9a1e78",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1769449487,
-      "message": "Initial commit",
-      "message_short": "Initial commit",
-      "type": "other",
-      "files_changed": 2,
-      "insertions": 439,
-      "deletions": 0
     }
   ]
 }

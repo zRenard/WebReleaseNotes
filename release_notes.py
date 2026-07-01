@@ -196,6 +196,15 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
             # Get tags for this commit
             commit_tags = tags_by_commit.get(commit.hexsha, [])
             
+            file_stats = []
+            for file_path, stats in sorted(commit.stats.files.items()):
+                file_stats.append({
+                    'path': file_path,
+                    'insertions': stats.get('insertions', 0),
+                    'deletions': stats.get('deletions', 0),
+                    'lines_changed': stats.get('lines', 0)
+                })
+
             commit_data = {
                 'hash': commit.hexsha,
                 'short_hash': commit.hexsha[:7],
@@ -205,6 +214,8 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
                 'message': commit.message.strip(),
                 'message_short': first_line[:100],
                 'type': commit_type,
+                'modified_files': sorted(commit.stats.files.keys()),
+                'modified_files_details': file_stats,
                 'files_changed': len(commit.stats.files),
                 'insertions': commit.stats.total['insertions'],
                 'deletions': commit.stats.total['deletions']
