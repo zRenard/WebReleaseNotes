@@ -7,7 +7,6 @@
 :root {
     --accent: #667eea;
     --accent-hover: #5568d3;
-
     --color-feat: #2da44e;    --bg-feat: #e6f7ea;
     --color-fix: #cf222e;     --bg-fix: #ffe6e9;
     --color-docs: #0969da;    --bg-docs: #e6f2ff;
@@ -18,7 +17,6 @@
     --color-ops: #546e7a;     --bg-ops: #eceff1;
     --color-chore: #fb8500;   --bg-chore: #fff4e6;
     --color-other: #656d76;   --bg-other: #f0f0f0;
-
     --bg-surface: #fff;
     --bg-surface-2: #f6f8fa;
     --border-color: #e1e4e8;
@@ -26,6 +24,7 @@
     --text-secondary: #57606a;
     --text-muted: #666;
 }
+
 * {
     margin: 0;
     padding: 0;
@@ -1349,7 +1348,7 @@ h1 {
     font-size: 0.86em;
     color: #1f2937;
     line-height: 1.35;
-    word-break: break-word;
+    overflow-wrap: anywhere;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -1690,7 +1689,7 @@ h1 {
 }
 
 .release-category-badge.release-filter-active {
-    box-shadow: 0 0 0 2px currentColor;
+    box-shadow: 0 0 0 2px currentcolor;
     font-weight: 700;
 }
 
@@ -1717,6 +1716,7 @@ h1 {
 /* Release Stacked Bar Chart */
 .release-bar-chart {
     display: grid;
+
     /* grid-template-columns set via inline style (e.g. "3fr 1fr 2fr") */
     gap: 0;
     padding: 8px 20px;
@@ -1856,8 +1856,7 @@ h1 {
     top: 0;
     z-index: 50;
     background: var(--bg-surface, white);
-    padding-bottom: 10px;
-    padding: 0 20px;
+    padding: 0 20px 10px;
 }
 
 .search-box {
@@ -2103,6 +2102,7 @@ body.theme-dark {
     --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #9aa4b2;
+
     background: linear-gradient(135deg, #0b0f14 0%, #1b2330 100%);
     color: #f1f5f9;
 }
