@@ -1,3 +1,5 @@
+name: 🚀 Validate and build artifact
+
 on:
   push:
     branches:
@@ -7,7 +9,6 @@ on:
   pull_request:
     branches:
       - main
-name: 🚀 Validate and build artifact
 
 # These permissions are needed for GitHub Pages and repository access
 permissions:
