@@ -53,7 +53,7 @@ The tool automatically classifies commits into categories (features, bug fixes, 
 2. **Install Python dependencies**:
 
    ```bash
-   pip install -e .
+   pip install -r requirements.txt
    ```
 
 3. **Install Node.js dependencies**:

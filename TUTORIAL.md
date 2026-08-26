@@ -154,13 +154,13 @@ WebReleaseNotes/
 The Python script requires the `gitpython` package. Install it with:
 
 ```bash
-pip install -e .
+pip install -r requirements.txt
 ```
 
 > **Screenshot — pip install**
 > ```
-> $ pip install -e .
-> Obtaining file:///path/to/WebReleaseNotes
+> $ pip install -r requirements.txt
+> Collecting gitpython
 > Installing collected packages: gitpython, smmap, gitdb
 > Successfully installed gitdb-4.0.11 gitpython-3.1.41 smmap-5.0.1
 > ```
@@ -545,7 +545,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install -e .
+        run: pip install -r requirements.txt
 
       - name: Generate release notes
         run: |
@@ -641,7 +641,7 @@ The tool recognizes these tag formats:
 ### "No module named git"
 
 ```bash
-pip install gitpython
+pip install -r requirements.txt
 ```
 
 ### "No commits found" or empty output

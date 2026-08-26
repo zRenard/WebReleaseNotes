@@ -1,12 +1,98 @@
 {
-  "generated_at": "2026-07-02 00:27:18",
-  "generated_at_iso": "2026-07-02T00:27:18.941597",
+  "generated_at": "2026-08-26 17:45:09",
+  "generated_at_iso": "2026-08-26T17:45:09.298347",
   "repository": {
     "name": "WebReleaseNotes",
     "branch": "main",
     "url": "https://github.com/zRenard/WebReleaseNotes"
   },
   "commits": [
+    {
+      "hash": "34d216623fc947c5fb223a7a9ca04faddcd1e355",
+      "short_hash": "34d2166",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1782946791,
+      "message": "fix: CSS warning",
+      "message_short": "fix: CSS warning",
+      "type": "fix",
+      "modified_files": [
+        "release_notes.css"
+      ],
+      "modified_files_details": [
+        {
+          "path": "release_notes.css",
+          "insertions": 6,
+          "deletions": 6,
+          "lines_changed": 12
+        }
+      ],
+      "files_changed": 1,
+      "insertions": 6,
+      "deletions": 6,
+      "tags": [
+        "v1.6.0"
+      ]
+    },
+    {
+      "hash": "7312e05b3630ed92708d050719b263be0848ce2b",
+      "short_hash": "7312e05",
+      "author": "zRenard",
+      "email": "zrenard@gmail.com",
+      "timestamp": 1782945458,
+      "message": "feat: Enhance commit data retrieval to include detailed file statistics\n\n- Added a new section to gather detailed statistics for modified files in each commit.\n- Included file path, insertions, deletions, and total lines changed for each modified file.\n- Updated the commit data structure to include a list of modified files and their details.\n- dependencies update",
+      "message_short": "feat: Enhance commit data retrieval to include detailed file statistics",
+      "type": "feat",
+      "modified_files": [
+        "package-lock.json",
+        "release_notes.css",
+        "release_notes.html",
+        "release_notes.js",
+        "release_notes.json",
+        "release_notes.py"
+      ],
+      "modified_files_details": [
+        {
+          "path": "package-lock.json",
+          "insertions": 88,
+          "deletions": 89,
+          "lines_changed": 177
+        },
+        {
+          "path": "release_notes.css",
+          "insertions": 379,
+          "deletions": 191,
+          "lines_changed": 570
+        },
+        {
+          "path": "release_notes.html",
+          "insertions": 32,
+          "deletions": 12,
+          "lines_changed": 44
+        },
+        {
+          "path": "release_notes.js",
+          "insertions": 394,
+          "deletions": 140,
+          "lines_changed": 534
+        },
+        {
+          "path": "release_notes.json",
+          "insertions": 965,
+          "deletions": 182,
+          "lines_changed": 1147
+        },
+        {
+          "path": "release_notes.py",
+          "insertions": 11,
+          "deletions": 0,
+          "lines_changed": 11
+        }
+      ],
+      "files_changed": 6,
+      "insertions": 1869,
+      "deletions": 614
+    },
     {
       "hash": "7e7d2d127bb97a7a0b168e67ea654122967dc609",
       "short_hash": "7e7d2d1",
@@ -1338,72 +1424,6 @@
       "deletions": 4,
       "tags": [
         "v1.3.0"
-      ]
-    },
-    {
-      "hash": "8c629b3c780f17888d50a9f56c133aaf8a6bf5a0",
-      "short_hash": "8c629b3",
-      "author": "zRenard",
-      "email": "zRenard@users.noreply.github.com",
-      "timestamp": 1770221115,
-      "message": "Add badges with releases numbers and specific one for incomming release\r\nFix an issues with dates of commits",
-      "message_short": "Add badges with releases numbers and specific one for incomming release\r",
-      "type": "feat",
-      "modified_files": [
-        "release_notes.css",
-        "release_notes.html",
-        "release_notes.js"
-      ],
-      "modified_files_details": [
-        {
-          "path": "release_notes.css",
-          "insertions": 45,
-          "deletions": 0,
-          "lines_changed": 45
-        },
-        {
-          "path": "release_notes.html",
-          "insertions": 2,
-          "deletions": 0,
-          "lines_changed": 2
-        },
-        {
-          "path": "release_notes.js",
-          "insertions": 40,
-          "deletions": 5,
-          "lines_changed": 45
-        }
-      ],
-      "files_changed": 3,
-      "insertions": 87,
-      "deletions": 5
-    },
-    {
-      "hash": "d71ab00a2c38c27867412b1a5d78e632fa5aa703",
-      "short_hash": "d71ab00",
-      "author": "zRenard",
-      "email": "zrenard@gmail.com",
-      "timestamp": 1770137339,
-      "message": "fix css lint errors",
-      "message_short": "fix css lint errors",
-      "type": "fix",
-      "modified_files": [
-        "release_notes.css"
-      ],
-      "modified_files_details": [
-        {
-          "path": "release_notes.css",
-          "insertions": 2,
-          "deletions": 1,
-          "lines_changed": 3
-        }
-      ],
-      "files_changed": 1,
-      "insertions": 2,
-      "deletions": 1,
-      "tags": [
-        "v1.2.0",
-        "v1.2.1"
       ]
     }
   ]

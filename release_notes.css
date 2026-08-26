@@ -1,7 +1,51 @@
 ﻿/* Style sécurisé pour le lien du dépôt dans release_notes.js */
 .repo-link {
-    color: #0366d6;
+    color: inherit;
+    text-decoration: none;
+}
+
+.repo-link:hover {
     text-decoration: underline;
+}
+
+/* Badges de métadonnées (Repository / Generated) */
+.meta-badge {
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.85em;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.meta-badge-label {
+    padding: 4px 10px;
+    background: #555;
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.meta-badge-value {
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    color: #fff;
+}
+
+.meta-badge-repo .meta-badge-value {
+    background: var(--accent);
+}
+
+.meta-badge-date .meta-badge-value {
+    background: #2da44e;
+}
+
+body.theme-dark .meta-badge-label {
+    background: #333;
 }
 
 :root {
