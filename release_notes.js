@@ -177,8 +177,8 @@ function displayMetadata(data) {
     document.title = titleText;
     
     document.getElementById('metadata').innerHTML = `
-        <strong>Repository:</strong> ${repoLink} | 
-        <strong>Generated:</strong> ${data.generated_at}
+        <span class="meta-badge meta-badge-repo"><span class="meta-badge-label">Repository</span><span class="meta-badge-value">${repoLink}</span></span>
+        <span class="meta-badge meta-badge-date"><span class="meta-badge-label">Generated</span><span class="meta-badge-value">${data.generated_at}</span></span>
     `;
 }
 
