@@ -152,8 +152,15 @@ def get_repository_commits(repo_path, num_commits=10, branch=None,exclude_title_
     try:
         repo = git.Repo(repo_path)
         if not branch:
-            branch = repo.active_branch.name
-        commits = list(repo.iter_commits(branch, max_count=num_commits))
+            try:
+                branch = repo.active_branch.name
+            except TypeError:
+                branch = 'HEAD'
+        try:
+            commits = list(repo.iter_commits(branch, max_count=num_commits))
+        except git.exc.GitCommandError:
+            commits = list(repo.iter_commits('HEAD', max_count=num_commits))
+            branch = 'HEAD'
         
         # Get all tags and their associated commit hashes
         tags_by_commit = {}
