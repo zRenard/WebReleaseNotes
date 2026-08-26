@@ -134,7 +134,7 @@ def should_exclude_commit(first_line, author, full_message,
     if any(p.search(message) for p in message_patterns):
         return True
     return False
-def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_title_patterns=None,
+def get_repository_commits(repo_path, num_commits=10, branch=None,exclude_title_patterns=None,
                            exclude_author_patterns=None,
                            exclude_message_patterns=None):
     """
@@ -143,7 +143,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
     Args:
         repo_path: Path to the git repository
         num_commits: Number of commits to retrieve
-        branch: Branch name to analyze
+        branch: Branch name to analyze (default: active HEAD branch)
     
     Returns:
         List of commit dictionaries with metadata
@@ -151,6 +151,8 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
     commits_data = []
     try:
         repo = git.Repo(repo_path)
+        if not branch:
+            branch = repo.active_branch.name
         commits = list(repo.iter_commits(branch, max_count=num_commits))
         
         # Get all tags and their associated commit hashes
@@ -234,7 +236,7 @@ def get_repository_commits(repo_path, num_commits=10, branch='main',exclude_titl
     return commits_data
 
 
-def export_release_notes(repo_path, num_commits, output_path, branch='main', markdown_path=None, latest_release_only=False, include_timeline=False, exclude_title_patterns=None, exclude_author_patterns=None,exclude_message_patterns=None):
+def export_release_notes(repo_path, num_commits, output_path, branch=None, markdown_path=None, latest_release_only=False, include_timeline=False, exclude_title_patterns=None, exclude_author_patterns=None,exclude_message_patterns=None):
     """
     Export commit messages from current repository to JSON for release notes.
     
@@ -887,8 +889,8 @@ def main():
     parser.add_argument(
         '--branch',
         type=str,
-        default='main',
-        help='Branch to analyze (default: main)'
+        default=None,
+        help='Branch to analyze (default: active HEAD branch)'
     )
     
     parser.add_argument(
