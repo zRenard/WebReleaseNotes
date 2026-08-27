@@ -53,7 +53,10 @@ The tool automatically classifies commits into categories (features, bug fixes, 
 2. **Install Python dependencies**:
 
    ```bash
-   pip install -r requirements.txt
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python3 -m pip install --upgrade pip
+   python3 -m pip install -r requirements.txt
    ```
 
 3. **Install Node.js dependencies**:

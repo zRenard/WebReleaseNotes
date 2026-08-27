@@ -20,6 +20,9 @@ jobs:
   web-flow:
     name: Website Build, Validate, and Publish
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event_name == 'pull_request' && '' || 'github-pages' }}
+      url: ${{ github.event_name == 'pull_request' && '' || steps.deployment.outputs.page_url }}    
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v7
@@ -28,7 +31,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '24'  
+          node-version: '24'
+          cache: 'npm'
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
       - name: Install Minifier Tools
         run: npm install terser html-minifier csso-cli
       - name: Install Validation Tools
@@ -73,14 +85,7 @@ jobs:
           name: deploy-files
           path: deploy/
           retention-days: 1
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+
       - name: Export release notes from current repository
         run: |
           # Create a directory for the Pages content
@@ -112,14 +117,21 @@ jobs:
         with:
           name: deploy-files
           path: deploy/
-      - name: 🏷️ Create Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: |
-            deploy/release_notes.html
-            deploy/release_notes.js
-            deploy/release_notes.css
-            deploy/release_notes.py
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+      
+      - name: 📦 Create zip archive
+        run: |
+          cd deploy
+          zip release_notes.zip release_notes.html release_notes.js release_notes.css release_notes.py
+
+      - name: 🏷️ Create Release and Upload Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            deploy/release_notes.html \
+            deploy/release_notes.js \
+            deploy/release_notes.css \
+            deploy/release_notes.py \
+            deploy/release_notes.zip \
+            --title "Release $GITHUB_REF_NAME" \
+            --generate-notes
