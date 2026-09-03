@@ -144,6 +144,7 @@ async function loadReleaseNotes() {
         displayCommits(data);
         populateAuthorFilter(data.commits);
         setupKeyboardShortcuts();
+        applyDeepLinkFromUrl();
 
         // Initialize search after commits are displayed
         setTimeout(() => {
@@ -250,6 +251,92 @@ function parseReleases(commits) {
         const dateB = new Date(b.startDate || 0);
         return dateB - dateA; // Descending order (most recent first)
     });
+}
+
+// ---------------------------------------------------------------------------
+// Deep-link support (Revontulet SPOR-746)
+//
+// `release_notes.html?tag=vX.Y.Z` opens straight on the matching release in
+// "By Release" view (dropdown selected + scrolled into view). Consumed by the
+// version links on Revontulet's maintenance page, which point one link at the
+// version already in production and one at the version being deployed.
+//
+// The requested tag may not be in release_notes.json yet (the "to" version is
+// only published near the end of a deploy): in that case we keep the full view
+// and show an informational banner instead of failing silently.
+// ---------------------------------------------------------------------------
+
+function getRequestedTag() {
+    try {
+        return (new URLSearchParams(globalThis.location.search).get('tag') || '').trim();
+    } catch (e) {
+        return '';
+    }
+}
+
+// Loose match: case-insensitive, optional leading "v" (git describe emits
+// "v1.8.0", a dropdown option may read "v1.8.0" or a merged "v1.8.0 / v1.7.0").
+function normalizeTag(tag) {
+    return String(tag).trim().replace(/^v/i, '').toLowerCase();
+}
+
+function findReleaseByTag(requested) {
+    const target = normalizeTag(requested);
+    if (!target) return null;
+    return releases.find(release =>
+        String(release.tag).split(' / ').some(part => normalizeTag(part) === target)
+    ) || null;
+}
+
+function showDeepLinkBanner(message, isPending) {
+    let banner = document.getElementById('deep-link-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'deep-link-banner';
+        banner.className = 'deep-link-banner';
+        const anchor = document.getElementById('summary');
+        if (anchor && anchor.parentNode) {
+            anchor.parentNode.insertBefore(banner, anchor);
+        } else {
+            document.querySelector('.container')?.prepend(banner);
+        }
+    }
+    banner.classList.toggle('deep-link-banner-pending', !!isPending);
+    banner.textContent = message;
+}
+
+function applyDeepLinkFromUrl() {
+    const requested = getRequestedTag();
+    if (!requested) return;
+
+    const release = findReleaseByTag(requested);
+    if (!release) {
+        showDeepLinkBanner(
+            `Release ${requested} isn't published yet — showing every recorded change.`,
+            true
+        );
+        return;
+    }
+
+    const releaseBtn = document.getElementById('btn-by-release');
+    const dropdown = document.getElementById('release-dropdown');
+    if (!releaseBtn || !dropdown) return;
+
+    showDeepLinkBanner(`Showing release ${release.tag}.`, false);
+
+    releaseBtn.click(); // switch to "By Release" view + populate the dropdown
+    dropdown.value = release.tag;
+    displayReleaseView(release.tag);
+
+    setTimeout(() => {
+        let section = null;
+        document.querySelectorAll('.release-section').forEach(el => {
+            if (el.dataset.releaseTag === release.tag) section = el;
+        });
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 300);
 }
 
 function setupModeButtons() {
