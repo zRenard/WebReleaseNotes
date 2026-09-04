@@ -1517,6 +1517,25 @@ h1 {
     border-radius: 4px;
 }
 
+/* Deep-link banner (Revontulet SPOR-746): shown when the page is opened with
+   ?tag=vX.Y.Z. Plain state = the release was found; -pending = not published
+   yet, full view kept. */
+.deep-link-banner {
+    margin: 16px 0;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent);
+    background-color: #eef1fd;
+    color: #35408a;
+    font-size: 0.95em;
+}
+
+.deep-link-banner-pending {
+    border-left-color: #d99a2b;
+    background-color: #fdf4e3;
+    color: #8a5a12;
+}
+
 /* View Controls - Mode Buttons */
 .view-controls {
     display: flex;
@@ -2519,6 +2538,16 @@ body.theme-dark .empty-section,
 body.theme-dark .loading {
     color: #9aa4b2;
     background-color: #151b24;
+}
+
+body.theme-dark .deep-link-banner {
+    background-color: #1a1f3a;
+    color: #b7c0f5;
+}
+
+body.theme-dark .deep-link-banner-pending {
+    background-color: #2e2413;
+    color: #e0b877;
 }
 
 body.theme-dark .download-link {

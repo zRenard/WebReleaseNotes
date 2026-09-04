@@ -274,6 +274,20 @@ The tool automatically detects release tags in `vMAJOR.MINOR.PATCH` or `VMAJOR.M
 
 Tags are attached only to the exact commit they point to. If a tagged commit is older than your `--num_commits` window, increase `--num_commits`.
 
+### Deep-linking to a release
+
+Open the page with a `tag` query parameter to jump straight to one release:
+
+```
+release_notes.html?tag=v1.8.0
+```
+
+The viewer switches to **By Release** mode, selects that release in the dropdown
+and scrolls to it. The match is case-insensitive and the leading `v` is optional.
+If the tag is not present in `release_notes.json` yet (for example a version that
+is still being deployed), the full view is kept and an informational banner is
+shown.
+
 ### Markdown Output
 
 When using the `--markdown` option, the script generates a formatted Markdown file:
