@@ -112,6 +112,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v7
+        with:
+          # Required to fetch all tags for release detection
+          fetch-depth: 0
+
       - name: 📥 Download deploy artifacts
         uses: actions/download-artifact@v8
         with:
