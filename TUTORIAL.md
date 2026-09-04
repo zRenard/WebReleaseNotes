@@ -684,3 +684,5 @@ On Windows, run the script commands manually or use Git Bash / WSL.
 ---
 
 *Tutorial for Web Release Notes — https://github.com/zrenard/WebReleaseNotes*
+
+
