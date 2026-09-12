@@ -2,6 +2,7 @@ const TYPE_LABELS = {
     'feat': { label: 'Features', icon: '✨', emoji: '✨' },
     'fix': { label: 'Bug Fixes', icon: '🐛', emoji: '🐛' },
     'docs': { label: 'Documentation', icon: '📚', emoji: '📚' },
+    'trad': { label: 'Translations', icon: '🌐', emoji: '🌐' },
     'style': { label: 'Code Style', icon: '💎', emoji: '💎' },
     'refactor': { label: 'Code Refactoring', icon: '♻️', emoji: '♻️' },
     'test': { label: 'Tests', icon: '✅', emoji: '✅' },
@@ -427,7 +428,7 @@ function displayReleaseView(selectedReleaseTag) {
     // Build HTML for releases
     const releaseHTML = releasesToDisplay.map(release => {
         // Group commits by type
-        const grouped = { feat: [], fix: [], docs: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
+        const grouped = { feat: [], fix: [], docs: [], trad: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
         release.commits.forEach(c => {
             const t = (c.type || 'other').toLowerCase();
             if (grouped[t]) {
@@ -525,7 +526,7 @@ function updateSummaryForReleaseView(releasesToDisplay) {
 }
 
 function buildSummaryFromCommits(commits) {
-    const grouped = { feat: 0, fix: 0, docs: 0, style: 0, refactor: 0, test: 0, perf: 0, ops: 0, chore: 0, other: 0 };
+    const grouped = { feat: 0, fix: 0, docs: 0, trad: 0, style: 0, refactor: 0, test: 0, perf: 0, ops: 0, chore: 0, other: 0 };
     const list = Array.isArray(commits) ? commits : [];
 
     list.forEach(commit => {
@@ -1581,7 +1582,7 @@ function displayCommits(data) {
     container.innerHTML = '';
     
     // Build a reliable grouping from commits using commit.type field
-    const grouped = { feat: [], fix: [], docs: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
+    const grouped = { feat: [], fix: [], docs: [], trad: [], style: [], refactor: [], test: [], perf: [], ops: [], chore: [], other: [] };
     if (Array.isArray(data.commits)) {
         data.commits.forEach(c => {
             const t = (c.type || 'other').toLowerCase();
@@ -1599,6 +1600,7 @@ function displayCommits(data) {
         feat: (grouped.feat || []).length,
         fix: (grouped.fix || []).length,
         docs: (grouped.docs || []).length,
+        trad: (grouped.trad || []).length,
         style: (grouped.style || []).length,
         refactor: (grouped.refactor || []).length,
         test: (grouped.test || []).length,

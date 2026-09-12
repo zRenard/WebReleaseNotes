@@ -70,6 +70,8 @@ def classify_commit(first_line, author, full_message):
             return 'fix'
         if prefix in ['docs']:
             return 'docs'
+        if prefix in ['trad']:
+            return 'trad'
         if prefix in ['style']:
             return 'style'
         if prefix in ['refactor']:
@@ -637,6 +639,7 @@ def generate_markdown_by_release(releases, release_data, include_timeline=False)
         'feat': ('✨ Features', '✨'),
         'fix': ('🐛 Bug Fixes', '🐛'),
         'docs': ('📚 Documentation', '📚'),
+        'trad': ('🌐 Translations', '🌐'),
         'style': ('💎 Code Style', '💎'),
         'refactor': ('♻️ Code Refactoring', '♻️'),
         'test': ('✅ Tests', '✅'),
@@ -666,6 +669,7 @@ def generate_markdown_by_release(releases, release_data, include_timeline=False)
             'feat': [],
             'fix': [],
             'docs': [],
+            'trad': [],
             'style': [],
             'refactor': [],
             'test': [],
@@ -681,7 +685,7 @@ def generate_markdown_by_release(releases, release_data, include_timeline=False)
         
         # Category summary
         category_summary = []
-        for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
+        for commit_type in ['feat', 'fix', 'docs', 'trad', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
             count = len(commits_by_type[commit_type])
             if count > 0:
                 title, emoji = type_info[commit_type]
@@ -692,7 +696,7 @@ def generate_markdown_by_release(releases, release_data, include_timeline=False)
             md_lines.append("")
         
         # Generate sections for each type
-        for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
+        for commit_type in ['feat', 'fix', 'docs', 'trad', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
             commits = commits_by_type[commit_type]
             if not commits:
                 continue
@@ -778,6 +782,7 @@ def generate_markdown_by_type(release_data, include_timeline=False):
         'feat': ('✨ Features', '✨'),
         'fix': ('🐛 Bug Fixes', '🐛'),
         'docs': ('📚 Documentation', '📚'),
+        'trad': ('🌐 Translations', '🌐'),
         'style': ('💎 Code Style', '💎'),
         'refactor': ('♻️ Code Refactoring', '♻️'),
         'test': ('✅ Tests', '✅'),
@@ -827,6 +832,7 @@ def generate_markdown_by_type(release_data, include_timeline=False):
         'feat': [],
         'fix': [],
         'docs': [],
+        'trad': [],
         'style': [],
         'refactor': [],
         'test': [],
@@ -854,7 +860,7 @@ def generate_markdown_by_type(release_data, include_timeline=False):
     # Breakdown by type
     md_lines.append("### Breakdown by Type")
     md_lines.append("")
-    for commit_type in ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
+    for commit_type in ['feat', 'fix', 'docs', 'trad', 'style', 'refactor', 'test', 'perf', 'ops', 'chore', 'other']:
         count = len(commits_by_type[commit_type])
         if count > 0:
             title, emoji = type_info[commit_type]

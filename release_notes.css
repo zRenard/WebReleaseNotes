@@ -54,6 +54,7 @@ body.theme-dark .meta-badge-label {
     --color-feat: #2da44e;    --bg-feat: #e6f7ea;
     --color-fix: #cf222e;     --bg-fix: #ffe6e9;
     --color-docs: #0969da;    --bg-docs: #e6f2ff;
+    --color-trad: #00897b;    --bg-trad: #e0f2f1;
     --color-style: #8e24aa;   --bg-style: #f3e5f5;
     --color-refactor: #00acc1; --bg-refactor: #e0f7fa;
     --color-test: #7cb342;    --bg-test: #f1f8e9;
@@ -945,6 +946,10 @@ h1 {
     background: #0969da;
 }
 
+.timeline-commit.type-trad {
+    background: #00897b;
+}
+
 .timeline-commit.type-style {
     background: #8e24aa;
 }
@@ -1259,6 +1264,10 @@ h1 {
 
 .commit-type.type-docs {
     background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.commit-type.type-trad {
+    background: linear-gradient(135deg, #26A69A, #00897B);
 }
 
 .commit-type.type-style {
@@ -1763,6 +1772,7 @@ h1 {
 .release-category-badge.feat     { background: var(--color-feat);     border-color: var(--color-feat);     color: #fff; }
 .release-category-badge.fix      { background: var(--color-fix);      border-color: var(--color-fix);      color: #fff; }
 .release-category-badge.docs     { background: var(--color-docs);     border-color: var(--color-docs);     color: #fff; }
+.release-category-badge.trad     { background: var(--color-trad);     border-color: var(--color-trad);     color: #fff; }
 .release-category-badge.style    { background: var(--color-style);    border-color: var(--color-style);    color: #fff; }
 .release-category-badge.refactor { background: var(--color-refactor); border-color: var(--color-refactor); color: #fff; }
 .release-category-badge.test     { background: var(--color-test);     border-color: var(--color-test);     color: #fff; }
@@ -1810,6 +1820,7 @@ h1 {
 .release-bar-segment.type-feat     { background: var(--color-feat); }
 .release-bar-segment.type-fix      { background: var(--color-fix); }
 .release-bar-segment.type-docs     { background: var(--color-docs); }
+.release-bar-segment.type-trad     { background: var(--color-trad); }
 .release-bar-segment.type-style    { background: var(--color-style); }
 .release-bar-segment.type-refactor { background: var(--color-refactor); }
 .release-bar-segment.type-test     { background: var(--color-test); }
@@ -2144,6 +2155,7 @@ body.theme-dark .icon-moon { display: none; }
 /* Chip colors matching category cards */
 .filter-chip.type-feat   { background: #e6f7ea; border-color: #2da44e; color: #1a6630; }
 .filter-chip.type-fix    { background: #ffe6e9; border-color: #cf222e; color: #8b1a21; }
+.filter-chip.type-trad   { background: var(--bg-trad); border-color: var(--color-trad); color: #00695c; }
 .filter-chip.type-docs   { background: #e6f2ff; border-color: #0969da; color: #0550a0; }
 .filter-chip.type-style  { background: #f3e5f5; border-color: #8e24aa; color: #5e1171; }
 .filter-chip.type-refactor { background: #e0f7fa; border-color: #00acc1; color: #006573; }
